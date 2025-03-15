@@ -69,6 +69,14 @@ export default App;
 
 ---
 
+### 🌟 حمایت از پروژه
+
+اگر این پکیج برای شما مفید بود، **لطفاً یک ستاره به مخزن GitHub بدهید ⭐**. این بهترین راه برای حمایت از پروژه و تشویق توسعه‌دهنده به بهبود آن است.
+
+👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
+
+از حمایت شما متشکریم! ❤️🚀
+
 ## 🇺🇸 English
 
 React component to input numbers in Persian, Indic, or English with customizable digit separators and full localization.
@@ -128,6 +136,14 @@ English Output: 123456
 | lang           | 'fa' \| 'in' \| 'en'            | "fa"    | Digit localization language          |
 | onChangeValue  | (englishNumber: string) => void | -       | Callback function on value change    |
 
+### 🌟 Support the Project
+
+If you found this package useful, **please consider giving a star ⭐ on GitHub**. It's the best way to support the project and encourage further improvements.
+
+👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
+
+Thank you for your support! ❤️🚀
+
 ---
 
 ### 📈 SEO Keywords
@@ -141,4 +157,5 @@ English Output: 123456
 [MIT License](LICENSE)
 
 © 2024 Your Name. All rights reserved.
+
 # persian-number-input
