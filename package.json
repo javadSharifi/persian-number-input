@@ -1,0 +1,45 @@
+{
+  "name": "persian-number-input",
+  "version": "1.0.2",
+  "description": "React component for Persian, Indic, or English localized number input with customizable digit grouping",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [
+    "react",
+    "persian",
+    "indic",
+    "number",
+    "input",
+    "localization",
+    "digit-grouping"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/persian-number-input.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/persian-number-input/issues"
+  },
+  "homepage": "https://github.com/yourusername/persian-number-input#readme",
+  "peerDependencies": {
+    "react": "^16.8 || ^17 || ^18 || ^19"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  }
+}
