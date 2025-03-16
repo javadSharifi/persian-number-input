@@ -6,9 +6,15 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "declaration": true,
+    "declarationDir": "dist",
+    "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

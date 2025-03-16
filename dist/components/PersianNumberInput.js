@@ -11,8 +11,13 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 import React, { useCallback } from 'react';
 import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
+// استایل پایه برای input
+const baseInputStyle = {
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+};
 const PersianNumberInput = (_a) => {
-    var { initialValue = '', separatorCount = 0, separatorChar = ',', lang = 'fa', onChangeValue } = _a, rest = __rest(_a, ["initialValue", "separatorCount", "separatorChar", "lang", "onChangeValue"]);
+    var { initialValue = '', separatorCount = 0, separatorChar = ',', lang = 'fa', onChangeValue, style } = _a, rest = __rest(_a, ["initialValue", "separatorCount", "separatorChar", "lang", "onChangeValue", "style"]);
     const [value, setValue] = React.useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
     const handleChange = useCallback((e) => {
         const input = convertToEnglishDigits(e.target.value).replace(/\D/g, '');
@@ -22,6 +27,8 @@ const PersianNumberInput = (_a) => {
     }, [onChangeValue]);
     const formattedValue = groupDigits(value, separatorCount, separatorChar);
     const displayValue = lang === 'en' ? formattedValue : toLocalizedDigits(formattedValue, lang);
-    return React.createElement("input", Object.assign({}, rest, { value: displayValue, onChange: handleChange }));
+    const mergedStyle = Object.assign(Object.assign({}, baseInputStyle), style);
+    return React.createElement("input", Object.assign({ value: displayValue, onChange: handleChange, style: mergedStyle }, rest));
 };
 export default PersianNumberInput;
+//# sourceMappingURL=PersianNumberInput.js.map

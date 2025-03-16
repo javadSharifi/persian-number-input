@@ -37,3 +37,4 @@ export const convertToEnglishDigits = (str) => {
     };
     return str.replace(/[۰-۹०-९]/g, (char) => map[char]);
 };
+//# sourceMappingURL=digitUtils.js.map

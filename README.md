@@ -4,89 +4,22 @@
 
 ---
 
-[فارسی 🇮🇷](#-فارسی) | [English 🇺🇸](#-english)
+[English 🇺🇸](#-english)| [فارسی 🇮🇷](#-فارسی)
 
 ---
-
-## 🇮🇷 فارسی
-
-کامپوننت React برای ورودی اعداد فارسی، انگلیسی و هندی با قابلیت جداکننده ارقام و محلی‌سازی کامل.
-
-✅ **امکانات کلیدی:**
-
-- پشتیبانی از اعداد فارسی، انگلیسی و هندی
-- قابلیت تعیین جداکننده ارقام دلخواه (هزارگان)
-- تبدیل خودکار اعداد محلی به اعداد انگلیسی
-- استفاده آسان و پشتیبانی از React نسخه‌های 16 تا 19
-
-### 🚀 نصب
-
-```bash
-npm install persian-number-input
-```
-
-### 💻 روش استفاده
-
-مثال ساده:
-
-```jsx
-import React, { useState } from "react";
-import PersianNumberInput from "persian-number-input";
-
-const App = () => {
-  const [number, setNumber] = useState("");
-
-  return (
-    <PersianNumberInput
-      initialValue="123456"
-      separatorCount={3}
-      lang="fa"
-      onChangeValue={(val) => setNumber(val)}
-    />
-  );
-};
-
-export default App;
-```
-
-### 🔥 مثال خروجی
-
-```
-ورودی: 123456
-خروجی نمایشی: ۱۲۳,۴۵۶
-خروجی انگلیسی: 123456
-```
-
-### 📚 مشخصات Props
-
-| نام            | نوع                             | پیشفرض | توضیح                            |
-| -------------- | ------------------------------- | ------ | -------------------------------- |
-| initialValue   | string                          | ""     | مقدار اولیه                      |
-| separatorCount | number                          | 0      | تعداد ارقام جداشده (مثلاً ۳ رقم) |
-| separatorChar  | string                          | ","    | کاراکتر جداکننده (مانند `,`)     |
-| lang           | 'fa' \| 'in' \| 'en'            | "fa"   | زبان نمایش ارقام                 |
-| onChangeValue  | (englishNumber: string) => void | -      | فراخوانی در تغییر مقدار          |
-
----
-
-### 🌟 حمایت از پروژه
-
-اگر این پکیج برای شما مفید بود، **لطفاً یک ستاره به مخزن GitHub بدهید ⭐**. این بهترین راه برای حمایت از پروژه و تشویق توسعه‌دهنده به بهبود آن است.
-
-👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
-
-از حمایت شما متشکریم! ❤️🚀
 
 ## 🇺🇸 English
 
-React component to input numbers in Persian, Indic, or English with customizable digit separators and full localization.
+Persian Number Input - React Component for Persian, English & Indic Number Formatting
+
+Easily input, format, and convert numbers in Persian, English, or Indic digits with customizable digit separators. Lightweight, React-compatible, and fully localized for React versions 16 to 19.
 
 ✅ **Key Features:**
 
-- Support for Persian, English, and Indic digits
-- Customizable digit grouping separators
-- Automatically converts localized digits to English
-- Easy-to-use API supporting React versions 16 to 19
+- Support for Persian, English, and Indic digit localization
+- Customizable digit grouping separators (e.g., commas)
+- Automatically converts localized digits to standard English digits
+- Simple, easy-to-integrate React API
 
 ### 🚀 Installation
 
@@ -94,13 +27,15 @@ React component to input numbers in Persian, Indic, or English with customizable
 npm install persian-number-input
 ```
 
+![Size](./public/size.png)
+
 ### 💻 Usage Example
 
-Simple usage:
+Simple usage example:
 
 ```jsx
 import React, { useState } from "react";
-import PersianNumberInput from "persian-number-input";
+import { PersianNumberInput } from "persian-number-input";
 
 const App = () => {
   const [number, setNumber] = useState("");
@@ -126,6 +61,8 @@ Displayed Output: ۱۲۳,۴۵۶
 English Output: 123456
 ```
 
+![Output Example](./public/output.png)
+
 ### 📚 Props Reference
 
 | Name           | Type                            | Default | Description                          |
@@ -136,9 +73,24 @@ English Output: 123456
 | lang           | 'fa' \| 'in' \| 'en'            | "fa"    | Digit localization language          |
 | onChangeValue  | (englishNumber: string) => void | -       | Callback function on value change    |
 
+---
+
+### ❓ FAQ (Frequently Asked Questions)
+
+**Does this package support React 19?**  
+Yes, it fully supports React versions 16 through 19.
+
+**What is the best use-case scenario for this component?**  
+Ideal for multilingual web applications, forms, and any interface requiring localized numeric inputs.
+
+**How can I customize the styles of this component?**  
+You can pass custom classes or inline styles directly to the component to match your design requirements.
+
+---
+
 ### 🌟 Support the Project
 
-If you found this package useful, **please consider giving a star ⭐ on GitHub**. It's the best way to support the project and encourage further improvements.
+If you find this package helpful, **please give it a star ⭐ on GitHub** to encourage further improvements.
 
 👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
 
@@ -159,3 +111,74 @@ Thank you for your support! ❤️🚀
 © 2024 Your Name. All rights reserved.
 
 # persian-number-input
+
+## 🇮🇷 فارسی
+
+کامپوننت React برای ورودی اعداد فارسی، انگلیسی و هندی با قابلیت جداکننده ارقام و محلی‌سازی کامل.
+
+✅ **امکانات کلیدی:**
+
+- پشتیبانی از اعداد فارسی، انگلیسی و هندی
+- قابلیت تعیین جداکننده ارقام دلخواه (هزارگان)
+- تبدیل خودکار اعداد محلی به اعداد انگلیسی
+- استفاده آسان و پشتیبانی از React نسخه‌های 16 تا 19
+
+### 🚀 نصب
+
+```bash
+npm install persian-number-input
+```
+
+### 💻 روش استفاده
+
+مثال ساده:
+
+```jsx
+import React, { useState } from "react";
+import { PersianNumberInput } from "persian-number-input";
+
+const App = () => {
+  const [number, setNumber] = useState("");
+
+  return (
+    <PersianNumberInput
+      initialValue="123456"
+      separatorCount={3}
+      lang="fa"
+      onChangeValue={(val) => setNumber(val)}
+    />
+  );
+};
+
+export default App;
+```
+
+### 🔥 مثال خروجی
+
+```
+ورودی: 123456
+خروجی نمایشی: ۱۲۳,۴۵۶
+خروجی انگلیسی: 123456
+```
+
+![مثال خروجی ](./public/output.png)
+
+### 📚 مشخصات Props
+
+| نام            | نوع                             | پیشفرض | توضیح                            |
+| -------------- | ------------------------------- | ------ | -------------------------------- |
+| initialValue   | string                          | ""     | مقدار اولیه                      |
+| separatorCount | number                          | 0      | تعداد ارقام جداشده (مثلاً ۳ رقم) |
+| separatorChar  | string                          | ","    | کاراکتر جداکننده (مانند `,`)     |
+| lang           | 'fa' \| 'in' \| 'en'            | "fa"   | زبان نمایش ارقام                 |
+| onChangeValue  | (englishNumber: string) => void | -      | فراخوانی در تغییر مقدار          |
+
+---
+
+### 🌟 حمایت از پروژه
+
+اگر این پکیج برای شما مفید بود، **لطفاً یک ستاره به مخزن GitHub بدهید ⭐**. این بهترین راه برای حمایت از پروژه و تشویق توسعه‌دهنده به بهبود آن است.
+
+👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
+
+از حمایت شما متشکریم! ❤️🚀
