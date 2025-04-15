@@ -12,6 +12,7 @@ export const groupDigits = (numStr, separatorCount, separatorChar = ",") => {
     }
     return numStr;
 };
+// بهینه‌سازی و استفاده از تابع برای تبدیل اعداد به انگلیسی
 export const convertToEnglishDigits = (str) => {
     const map = {
         "۰": "0",

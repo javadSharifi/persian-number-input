@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import PropTypes from 'prop-types';  // اضافه کردن PropTypes برای تایپ‌دهی در زمان اجرا
 import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
 
-// Props مخصوص کامپوننت
+// تایپ پروپ‌ها با استفاده از PropTypes برای ایمنی بیشتر
 interface PersianNumberInputCustomProps {
     initialValue?: string;
     separatorCount?: number;
@@ -10,7 +11,6 @@ interface PersianNumberInputCustomProps {
     onChangeValue?: (englishNumber: string) => void;
 }
 
-// Props مجاز برای input
 type AllowedInputProps = Pick<
     React.InputHTMLAttributes<HTMLInputElement>,
     | 'className'
@@ -27,7 +27,6 @@ type AllowedInputProps = Pick<
     | 'required'
     | 'title'
     | 'dir'
-    // Event handlers
     | 'onClick'
     | 'onKeyDown'
     | 'onKeyUp'
@@ -49,7 +48,6 @@ const baseInputStyle: React.CSSProperties = {
     borderRadius: '4px',
 };
 
-// ترکیب props های مجاز
 export type PersianNumberInputProps = PersianNumberInputCustomProps & AllowedInputProps;
 
 const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
@@ -61,7 +59,7 @@ const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
     style,
     ...rest
 }) => {
-    const [value, setValue] = React.useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
+    const [value, setValue] = useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const input = convertToEnglishDigits(e.target.value).replace(/\D/g, '');
@@ -74,12 +72,24 @@ const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
 
     const mergedStyle = { ...baseInputStyle, ...style };
 
-    return <input
-        value={displayValue}
-        onChange={handleChange}
-        style={mergedStyle}
-        {...rest}
-    />;
+    return (
+        <input
+            value={displayValue}
+            onChange={handleChange}
+            style={mergedStyle}
+            {...rest}
+        />
+    );
+};
+
+// اضافه کردن PropTypes برای اطمینان از تطابق نوع
+PersianNumberInput.propTypes = {
+    initialValue: PropTypes.string,
+    separatorCount: PropTypes.number,
+    separatorChar: PropTypes.string,
+    lang: PropTypes.oneOf(['fa', 'in', 'en']),
+    onChangeValue: PropTypes.func,
+    style: PropTypes.object,
 };
 
 export default PersianNumberInput;
