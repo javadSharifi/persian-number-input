@@ -10,7 +10,6 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types'; // اضافه کردن PropTypes برای تایپ‌دهی در زمان اجرا
 import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
 // استایل پایه برای input
 const baseInputStyle = {
@@ -19,9 +18,12 @@ const baseInputStyle = {
 };
 const PersianNumberInput = (_a) => {
     var { initialValue = '', separatorCount = 0, separatorChar = ',', lang = 'fa', onChangeValue, style } = _a, rest = __rest(_a, ["initialValue", "separatorCount", "separatorChar", "lang", "onChangeValue", "style"]);
+    // تابع برای اعتبارسنجی ورودی و جلوگیری از کاراکترهای غیرمجاز
+    const sanitizeInput = (input) => input.replace(/[^\d,]/g, '');
     const [value, setValue] = useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
     const handleChange = useCallback((e) => {
-        const input = convertToEnglishDigits(e.target.value).replace(/\D/g, '');
+        // فیلتر کردن ورودی‌های غیرمجاز
+        const input = sanitizeInput(convertToEnglishDigits(e.target.value));
         setValue(input);
         if (onChangeValue)
             onChangeValue(input);
@@ -30,15 +32,6 @@ const PersianNumberInput = (_a) => {
     const displayValue = lang === 'en' ? formattedValue : toLocalizedDigits(formattedValue, lang);
     const mergedStyle = Object.assign(Object.assign({}, baseInputStyle), style);
     return (React.createElement("input", Object.assign({ value: displayValue, onChange: handleChange, style: mergedStyle }, rest)));
-};
-// اضافه کردن PropTypes برای اطمینان از تطابق نوع
-PersianNumberInput.propTypes = {
-    initialValue: PropTypes.string,
-    separatorCount: PropTypes.number,
-    separatorChar: PropTypes.string,
-    lang: PropTypes.oneOf(['fa', 'in', 'en']),
-    onChangeValue: PropTypes.func,
-    style: PropTypes.object,
 };
 export default PersianNumberInput;
 //# sourceMappingURL=PersianNumberInput.js.map

@@ -2,17 +2,19 @@ export const digitsMap = {
     fa: ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"],
     in: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
 };
+// تبدیل اعداد به اعداد محلی با استفاده از نقشه
 export const toLocalizedDigits = (numStr, locale) => {
     const digits = digitsMap[locale];
     return numStr.replace(/\d/g, (digit) => digits[parseInt(digit)]);
 };
+// گروه‌بندی اعداد با استفاده از جداکننده
 export const groupDigits = (numStr, separatorCount, separatorChar = ",") => {
     if (separatorCount && separatorCount > 0) {
         return numStr.replace(new RegExp(`\\B(?=(\\d{${separatorCount}})+(?!\\d))`, "g"), separatorChar);
     }
     return numStr;
 };
-// بهینه‌سازی و استفاده از تابع برای تبدیل اعداد به انگلیسی
+// تبدیل اعداد محلی به اعداد انگلیسی
 export const convertToEnglishDigits = (str) => {
     const map = {
         "۰": "0",
