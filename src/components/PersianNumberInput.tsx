@@ -1,8 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';  // اضافه کردن PropTypes برای تایپ‌دهی در زمان اجرا
 import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
 
-// تایپ پروپ‌ها با استفاده از PropTypes برای ایمنی بیشتر
+// تایپ پروپ‌ها با استفاده از TypeScript برای ایمنی بیشتر
 interface PersianNumberInputCustomProps {
     initialValue?: string;
     separatorCount?: number;
@@ -59,10 +58,14 @@ const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
     style,
     ...rest
 }) => {
+    // تابع برای اعتبارسنجی ورودی و جلوگیری از کاراکترهای غیرمجاز
+    const sanitizeInput = (input: string) => input.replace(/[^\d,]/g, '');
+
     const [value, setValue] = useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const input = convertToEnglishDigits(e.target.value).replace(/\D/g, '');
+        // فیلتر کردن ورودی‌های غیرمجاز
+        const input = sanitizeInput(convertToEnglishDigits(e.target.value));
         setValue(input);
         if (onChangeValue) onChangeValue(input);
     }, [onChangeValue]);
@@ -80,16 +83,6 @@ const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
             {...rest}
         />
     );
-};
-
-// اضافه کردن PropTypes برای اطمینان از تطابق نوع
-PersianNumberInput.propTypes = {
-    initialValue: PropTypes.string,
-    separatorCount: PropTypes.number,
-    separatorChar: PropTypes.string,
-    lang: PropTypes.oneOf(['fa', 'in', 'en']),
-    onChangeValue: PropTypes.func,
-    style: PropTypes.object,
 };
 
 export default PersianNumberInput;

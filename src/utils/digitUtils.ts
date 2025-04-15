@@ -3,11 +3,13 @@ export const digitsMap: { [key: string]: string[] } = {
   in: ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"],
 };
 
+// تبدیل اعداد به اعداد محلی با استفاده از نقشه
 export const toLocalizedDigits = (numStr: string, locale: "fa" | "in") => {
   const digits = digitsMap[locale];
   return numStr.replace(/\d/g, (digit) => digits[parseInt(digit)]);
 };
 
+// گروه‌بندی اعداد با استفاده از جداکننده
 export const groupDigits = (
   numStr: string,
   separatorCount: number,
@@ -22,7 +24,7 @@ export const groupDigits = (
   return numStr;
 };
 
-// بهینه‌سازی و استفاده از تابع برای تبدیل اعداد به انگلیسی
+// تبدیل اعداد محلی به اعداد انگلیسی
 export const convertToEnglishDigits = (str: string) => {
   const map: { [key: string]: string } = {
     "۰": "0",
