@@ -1,3 +1,4 @@
+"use strict";
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -9,29 +10,38 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-import React, { useCallback, useState } from 'react';
-import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
-// استایل پایه برای input
-const baseInputStyle = {
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-};
+Object.defineProperty(exports, "__esModule", { value: true });
+const jsx_runtime_1 = require("react/jsx-runtime");
+const usePersianNumberInput_1 = require("../hooks/usePersianNumberInput");
 const PersianNumberInput = (_a) => {
-    var { initialValue = '', separatorCount = 0, separatorChar = ',', lang = 'fa', onChangeValue, style } = _a, rest = __rest(_a, ["initialValue", "separatorCount", "separatorChar", "lang", "onChangeValue", "style"]);
-    // تابع برای اعتبارسنجی ورودی و جلوگیری از کاراکترهای غیرمجاز
-    const sanitizeInput = (input) => input.replace(/[^\d,]/g, '');
-    const [value, setValue] = useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
-    const handleChange = useCallback((e) => {
-        // فیلتر کردن ورودی‌های غیرمجاز
-        const input = sanitizeInput(convertToEnglishDigits(e.target.value));
-        setValue(input);
-        if (onChangeValue)
-            onChangeValue(input);
-    }, [onChangeValue]);
-    const formattedValue = groupDigits(value, separatorCount, separatorChar);
-    const displayValue = lang === 'en' ? formattedValue : toLocalizedDigits(formattedValue, lang);
-    const mergedStyle = Object.assign(Object.assign({}, baseInputStyle), style);
-    return (React.createElement("input", Object.assign({ value: displayValue, onChange: handleChange, style: mergedStyle }, rest)));
+    var { 
+    // جدا کردن آپشن های هوک از بقیه پراپ های input
+    initialValue, separatorCount, separatorChar, locale, maxDecimals, showZero, onValueChange, min, max } = _a, 
+    // بقیه پراپ ها (مثل className, style, placeholder, id و ...) به input اصلی منتقل می شوند
+    restInputProps = __rest(_a, ["initialValue", "separatorCount", "separatorChar", "locale", "maxDecimals", "showZero", "onValueChange", "min", "max"]);
+    // اعتبارسنجی پراپ‌ها
+    if (maxDecimals !== undefined && maxDecimals < 0) {
+        console.warn('maxDecimals باید غیرمنفی باشد');
+        maxDecimals = 0;
+    }
+    if (min !== undefined && max !== undefined && min > max) {
+        console.warn('min نباید بزرگ‌تر از max باشد');
+    }
+    const { value: formattedValue, onChange, rawValue, // می توانید rawValue را هم برگردانید اگر لازم است
+     } = (0, usePersianNumberInput_1.usePersianNumberInput)({
+        initialValue,
+        separatorCount,
+        separatorChar,
+        locale,
+        maxDecimals,
+        showZero,
+        onValueChange,
+        min,
+        max
+    });
+    return ((0, jsx_runtime_1.jsx)("input", Object.assign({ type: "text" // یا "tel" هم گاهی استفاده می شود
+        , inputMode: "decimal", dir: "ltr" // معمولا برای اعداد بهتر است
+     }, restInputProps, { value: formattedValue, onChange: onChange })));
 };
-export default PersianNumberInput;
+exports.default = PersianNumberInput;
 //# sourceMappingURL=PersianNumberInput.js.map

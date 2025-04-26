@@ -1,86 +1,65 @@
-import React, { useCallback, useState } from 'react';
-import { toLocalizedDigits, groupDigits, convertToEnglishDigits } from '../utils/digitUtils';
+import React from 'react';
+import { usePersianNumberInput } from '../hooks/usePersianNumberInput';
+import type { TransformNumberOptions } from '../utils/transformNumber';
 
-// تایپ پروپ‌ها با استفاده از TypeScript برای ایمنی بیشتر
-interface PersianNumberInputCustomProps {
-    initialValue?: string;
-    separatorCount?: number;
-    separatorChar?: string;
-    lang?: 'fa' | 'in' | 'en';
-    onChangeValue?: (englishNumber: string) => void;
+// پراپ های کامپوننت می تواند شامل آپشن های هوک و پراپ های استاندارد input باشد
+interface PersianNumberInputProps
+    extends TransformNumberOptions,
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+    // می توانید پراپ های دیگری هم اضافه کنید
+    onValueChange?: (value: string | undefined) => void;
+    initialValue?: number | string;
+    min?: number; // پشتیبانی از اعشار
+    max?: number; // پشتیبانی از اعشار
 }
 
-type AllowedInputProps = Pick<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    | 'className'
-    | 'style'
-    | 'placeholder'
-    | 'disabled'
-    | 'readOnly'
-    | 'id'
-    | 'name'
-    | 'autoComplete'
-    | 'autoFocus'
-    | 'maxLength'
-    | 'minLength'
-    | 'required'
-    | 'title'
-    | 'dir'
-    | 'onClick'
-    | 'onKeyDown'
-    | 'onKeyUp'
-    | 'onKeyPress'
-    | 'onFocus'
-    | 'onBlur'
-    | 'onMouseDown'
-    | 'onMouseUp'
-    | 'onMouseEnter'
-    | 'onMouseLeave'
-    | 'onTouchStart'
-    | 'onTouchEnd'
-    | 'onPaste'
->;
-
-// استایل پایه برای input
-const baseInputStyle: React.CSSProperties = {
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-};
-
-export type PersianNumberInputProps = PersianNumberInputCustomProps & AllowedInputProps;
-
 const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
-    initialValue = '',
-    separatorCount = 0,
-    separatorChar = ',',
-    lang = 'fa',
-    onChangeValue,
-    style,
-    ...rest
+    // جدا کردن آپشن های هوک از بقیه پراپ های input
+    initialValue,
+    separatorCount,
+    separatorChar,
+    locale,
+    maxDecimals,
+    showZero,
+    onValueChange,
+    min,
+    max,
+    // بقیه پراپ ها (مثل className, style, placeholder, id و ...) به input اصلی منتقل می شوند
+    ...restInputProps
 }) => {
-    // تابع برای اعتبارسنجی ورودی و جلوگیری از کاراکترهای غیرمجاز
-    const sanitizeInput = (input: string) => input.replace(/[^\d,]/g, '');
+    // اعتبارسنجی پراپ‌ها
+    if (maxDecimals !== undefined && maxDecimals < 0) {
+        console.warn('maxDecimals باید غیرمنفی باشد');
+        maxDecimals = 0;
+    }
+    if (min !== undefined && max !== undefined && min > max) {
+        console.warn('min نباید بزرگ‌تر از max باشد');
+    }
 
-    const [value, setValue] = useState(() => convertToEnglishDigits(initialValue).replace(/\D/g, ''));
-
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        // فیلتر کردن ورودی‌های غیرمجاز
-        const input = sanitizeInput(convertToEnglishDigits(e.target.value));
-        setValue(input);
-        if (onChangeValue) onChangeValue(input);
-    }, [onChangeValue]);
-
-    const formattedValue = groupDigits(value, separatorCount, separatorChar);
-    const displayValue = lang === 'en' ? formattedValue : toLocalizedDigits(formattedValue, lang);
-
-    const mergedStyle = { ...baseInputStyle, ...style };
+    const {
+        value: formattedValue,
+        onChange,
+        rawValue, // می توانید rawValue را هم برگردانید اگر لازم است
+    } = usePersianNumberInput({
+        initialValue,
+        separatorCount,
+        separatorChar,
+        locale,
+        maxDecimals,
+        showZero,
+        onValueChange,
+        min,
+        max
+    });
 
     return (
         <input
-            value={displayValue}
-            onChange={handleChange}
-            style={mergedStyle}
-            {...rest}
+            type="text" // یا "tel" هم گاهی استفاده می شود
+            inputMode="decimal"
+            dir="ltr" // معمولا برای اعداد بهتر است
+            {...restInputProps} // اعمال پراپ های اضافی مثل className, id, placeholder ...
+            value={formattedValue}
+            onChange={onChange}
         />
     );
 };
