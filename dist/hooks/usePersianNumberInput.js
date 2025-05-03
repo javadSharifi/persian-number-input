@@ -9,104 +9,108 @@ const react_1 = require("react");
 const decimal_js_1 = __importDefault(require("decimal.js"));
 const transformNumber_1 = require("../utils/transformNumber");
 const digitUtils_1 = require("../utils/digitUtils");
-// اگر maxDecimals تعریف نشده باشد، اعشار حفظ می‌شود
-const roundToDecimals = (value, maxDecimals) => {
-    if (!value || !value.includes('.') || maxDecimals == null)
-        return value;
-    const [integerPart, fractionalPart] = value.split('.');
-    if (maxDecimals === 0)
-        return integerPart;
-    const trimmedFractional = fractionalPart.slice(0, maxDecimals);
-    return trimmedFractional ? `${integerPart}.${trimmedFractional}` : integerPart;
-};
-const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar = ',', locale = 'fa', maxDecimals, // undefined یعنی نامحدود
-showZero = false, onValueChange, min, max, } = {}) => {
-    const [rawValue, setRawValue] = (0, react_1.useState)(() => {
-        if (initialValue == null)
+// ۱. تعریف سیگنال منحصر به فرد برای خطای محدوده
+const INVALID_RANGE_SIGNAL = Symbol("INVALID_RANGE");
+const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar = ',', locale = 'fa', showZero = false, onValueChange, min, max, maxDecimals, inputDecimalSeparator = '.', } = {}) => {
+    // اسم تابع برای وضوح بیشتر تغییر کرد
+    const getSanitizedRoundedAndCheckedValue = (0, react_1.useCallback)((val) => {
+        // ۲. نوع خروجی تابع تغییر کرد
+        if (val === null || val === undefined)
             return undefined;
-        let sanitized = (0, digitUtils_1.sanitizeNumericInput)(String(initialValue));
-        sanitized = roundToDecimals(sanitized, maxDecimals);
-        if (sanitized) {
+        let sanitized = (0, digitUtils_1.sanitizeNumericInput)(String(val), inputDecimalSeparator);
+        // اجازه عبور موقت به مقادیر بینابینی
+        if (sanitized === '-' || sanitized === '.' || sanitized === '-.') {
+            // در انتها بررسی showZero برای اینها انجام می‌شود
+        }
+        else if (sanitized) { // اگر رشته خالی یا فقط بینابینی نیست
             try {
+                // تبدیل به Decimal فقط برای بررسی محدوده
                 const numericValue = new decimal_js_1.default(sanitized);
-                if ((min !== undefined && numericValue.lt(min)) ||
-                    (max !== undefined && numericValue.gt(max))) {
+                // ۳. بررسی محدوده و برگرداندن سیگنال در صورت خطا
+                if (min !== undefined && numericValue.lt(min)) {
+                    console.warn(`Value ${sanitized} is less than min ${min}. Input ignored.`);
+                    return INVALID_RANGE_SIGNAL; // <<< برگرداندن سیگنال
+                }
+                if (max !== undefined && numericValue.gt(max)) {
+                    console.warn(`Value ${sanitized} exceeds max ${max}. Input ignored.`);
+                    return INVALID_RANGE_SIGNAL; // <<< برگرداندن سیگنال
+                }
+                // اگر در محدوده بود، گرد کردن را اعمال کن
+                sanitized = (0, digitUtils_1.roundToDecimals)(sanitized, maxDecimals);
+            }
+            catch (error) {
+                console.warn(`Error processing sanitized value: ${sanitized}`, error);
+                return undefined; // خطای پردازش به معنی نامعتبر بودن است
+            }
+        }
+        else {
+            // اگر sanitizeNumericInput رشته خالی برگرداند
+            return undefined;
+        }
+        // مدیریت showZero برای مقدار نهایی (بعد از بررسی محدوده و گرد کردن)
+        if (!showZero) {
+            // مقادیر بینابینی را حذف کن اگر showZero=false
+            if (sanitized === '-' || sanitized === '.' || sanitized === '-.') {
+                return undefined;
+            }
+            try {
+                // مقادیر صفر را حذف کن (مگر اینکه نقطه انتهایی داشته باشد)
+                if (sanitized && new decimal_js_1.default(sanitized).isZero() && !sanitized.endsWith('.')) {
                     return undefined;
                 }
             }
-            catch (error) {
-                console.warn(`Invalid initial value: ${sanitized}`, error);
-                return undefined;
-            }
+            catch ( /* نادیده گرفتن خطا */_a) { /* نادیده گرفتن خطا */ }
         }
-        if (parseFloat(sanitized) === 0 && !showZero && sanitized !== '0') {
-            return undefined;
-        }
-        return sanitized || undefined;
+        // در نهایت، اگر رشته خالی شده، undefined برگردان
+        return sanitized === '' ? undefined : sanitized;
+    }, [inputDecimalSeparator, min, max, maxDecimals, showZero]);
+    // ۵. مدیریت سیگنال در مقدار اولیه
+    const [rawValue, setRawValue] = (0, react_1.useState)(() => {
+        const initialProcessed = getSanitizedRoundedAndCheckedValue(initialValue);
+        // اگر مقدار اولیه خارج از محدوده بود، با undefined شروع کن
+        return initialProcessed === INVALID_RANGE_SIGNAL ? undefined : initialProcessed;
     });
+    // useEffect برای initialValue ممکن است نیاز به بازبینی داشته باشد
     const displayValue = (0, react_1.useMemo)(() => {
-        const options = { separatorCount, separatorChar, locale, maxDecimals, showZero };
-        if (rawValue === undefined) {
-            return showZero ? (0, transformNumber_1.transformNumber)('0', options) : '';
-        }
+        const options = { separatorCount, separatorChar, locale, showZero, maxDecimals };
         return (0, transformNumber_1.transformNumber)(rawValue, options);
-    }, [rawValue, separatorCount, separatorChar, locale, maxDecimals, showZero]);
+    }, [rawValue, separatorCount, separatorChar, locale, showZero, maxDecimals]);
+    // ۴. اصلاح handleChange برای پردازش سیگنال
     const handleChange = (0, react_1.useCallback)((event) => {
         const inputValue = event.target.value;
-        let sanitizedValue = (0, digitUtils_1.sanitizeNumericInput)(inputValue);
-        if (sanitizedValue !== rawValue) {
-            sanitizedValue = roundToDecimals(sanitizedValue, maxDecimals);
-            let valueToSet = sanitizedValue;
-            if (sanitizedValue) {
-                try {
-                    const numericValue = new decimal_js_1.default(sanitizedValue);
-                    if ((min !== undefined && numericValue.lt(min)) ||
-                        (max !== undefined && numericValue.gt(max))) {
-                        return; // خارج از محدوده
-                    }
-                }
-                catch (error) {
-                    console.warn(`Invalid input value: ${sanitizedValue}`, error);
-                    return;
-                }
-            }
-            if (parseFloat(sanitizedValue) === 0 && !showZero && sanitizedValue !== '0.') {
-                valueToSet = undefined;
-            }
-            setRawValue(valueToSet);
-            if (onValueChange)
-                onValueChange(valueToSet);
-        }
-    }, [rawValue, onValueChange, showZero, min, max, maxDecimals]);
-    const handleSetValue = (0, react_1.useCallback)((newValue) => {
-        if (newValue == null) {
-            setRawValue(undefined);
-            if (onValueChange)
-                onValueChange(undefined);
+        // دریافت مقدار پردازش شده یا سیگنال خطا
+        const processedValue = getSanitizedRoundedAndCheckedValue(inputValue);
+        // اگر سیگنال خطا دریافت شد، هیچ کاری نکن (مقدار قبلی حفظ می‌شود)
+        if (processedValue === INVALID_RANGE_SIGNAL) {
+            // اینجا می‌توانید بازخورد بصری به کاربر بدهید (مثلا لرزش input)
             return;
         }
-        let sanitizedValue = (0, digitUtils_1.sanitizeNumericInput)(String(newValue));
-        sanitizedValue = roundToDecimals(sanitizedValue, maxDecimals);
-        if (sanitizedValue) {
-            try {
-                const numericValue = new decimal_js_1.default(sanitizedValue);
-                if ((min !== undefined && numericValue.lt(min)) ||
-                    (max !== undefined && numericValue.gt(max))) {
-                    return;
-                }
-            }
-            catch (error) {
-                console.warn(`Invalid set value: ${sanitizedValue}`, error);
-                return;
+        // اگر مقدار معتبر بود (رشته یا undefined) و با مقدار فعلی فرق داشت
+        if (processedValue !== rawValue) {
+            setRawValue(processedValue);
+            if (onValueChange) {
+                onValueChange(processedValue);
             }
         }
-        const valueToSet = parseFloat(sanitizedValue) === 0 && !showZero && sanitizedValue !== '0.'
-            ? undefined
-            : sanitizedValue;
-        setRawValue(valueToSet);
-        if (onValueChange)
-            onValueChange(valueToSet);
-    }, [onValueChange, showZero, min, max, maxDecimals]);
+    }, [rawValue, getSanitizedRoundedAndCheckedValue, onValueChange] // تابع پردازشگر به وابستگی‌ها اضافه شد
+    );
+    // ۴. اصلاح handleSetValue برای پردازش سیگنال
+    const handleSetValue = (0, react_1.useCallback)((newValue) => {
+        const processedValue = getSanitizedRoundedAndCheckedValue(newValue);
+        // اگر مقدار جدید خارج از محدوده است، درخواست را نادیده بگیر
+        if (processedValue === INVALID_RANGE_SIGNAL) {
+            console.warn(`setValue ignored: Value ${newValue} is out of range [${min}, ${max}].`);
+            return;
+        }
+        // اگر مقدار معتبر و متفاوت بود، تنظیم کن
+        if (processedValue !== rawValue) {
+            setRawValue(processedValue);
+            if (onValueChange) {
+                onValueChange(processedValue);
+            }
+        }
+    }, [rawValue, min, max, getSanitizedRoundedAndCheckedValue, onValueChange] // min/max هم برای پیام هشدار اضافه شد
+    );
     return { value: displayValue, onChange: handleChange, setValue: handleSetValue, rawValue };
 };
 exports.usePersianNumberInput = usePersianNumberInput;

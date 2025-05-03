@@ -5,44 +5,32 @@ export declare const digitsMap: {
     [key: string]: ReadonlyArray<string>;
 };
 /**
- * نقشه جداکننده اعشار برای زبان‌های مختلف.
+ * نقشه جداکننده اعشار برای زبان‌های مختلف (برای نمایش خروجی).
  */
 export declare const decimalSeparatorMap: {
     [key: string]: string;
 };
-/**
- * تبدیل رشته حاوی ارقام محلی (مانند فارسی) به رشته با ارقام انگلیسی (0-9).
- * @param str رشته ورودی
- * @returns رشته با ارقام انگلیسی
- */
 export declare const convertToEnglishDigits: (str: string) => string;
-/**
- * تبدیل رشته حاوی ارقام انگلیسی (0-9) به رشته با ارقام محلی.
- * @param numStr رشته با ارقام انگلیسی
- * @param locale کد زبان ('fa', 'in', ...)
- * @returns رشته با ارقام محلی
- */
 export declare const toLocalizedDigits: (numStr: string, locale: keyof typeof digitsMap) => string;
-/**
- * جایگزینی جداکننده اعشار انگلیسی (.) با جداکننده محلی.
- * @param numStr رشته با ارقام و جداکننده انگلیسی
- * @param locale کد زبان
- * @returns رشته با جداکننده اعشار محلی
- */
 export declare const localizeDecimalSeparator: (numStr: string, locale: keyof typeof decimalSeparatorMap) => string;
-/**
- * گروه‌بندی ارقام قسمت صحیح یک عدد با استفاده از جداکننده.
- * @param numStr قسمت صحیح عدد (فقط ارقام انگلیسی)
- * @param separatorCount تعداد ارقام در هر گروه
- * @param separatorChar کاراکتر جداکننده
- * @returns رشته گروه‌بندی شده
- */
 export declare const groupDigits: (numStr: string, separatorCount: number, separatorChar?: string) => string;
 /**
- * پاک‌سازی ورودی عددی برای اجازه دادن به کاراکترهای مجاز (اعداد، نقطه و منفی).
- * این نسخه جدید: ارقام فارسی و جداکننده اعشار فارسی را هم پشتیبانی می‌کند.
- * @param value - رشته ورودی
- * @returns رشته پاک‌شده
+ * پاک‌سازی ورودی عددی.
+ * ارقام محلی و جداکننده اعشار محلی (٫) و جداکننده دلخواه ورودی را به انگلیسی تبدیل می‌کند.
+ * کاراکترهای غیرمجاز را حذف می‌کند.
+ * فقط یک نقطه اعشار و یک علامت منفی در ابتدا را مجاز می‌داند.
+ *
+ * @param value رشته ورودی
+ * @param inputDecimalSeparator کاراکتر جداکننده اعشار که کاربر در ورودی استفاده می‌کند (پیش‌فرض '.')
+ * @returns رشته پاک‌شده با ارقام انگلیسی و نقطه استاندارد (.). می‌تواند شامل '-' یا '.' یا '-.' باشد.
  */
-export declare const sanitizeNumericInput: (value: string) => string;
+export declare const sanitizeNumericInput: (value: string | number | null | undefined, inputDecimalSeparator?: string) => string;
+/**
+ * گرد کردن یا محدود کردن تعداد ارقام اعشار یک رشته عددی (انگلیسی).
+ * مهم: این تابع نقطه انتهایی را حفظ می‌کند اگر ورودی با نقطه تمام شود و maxDecimals صفر نباشد.
+ * @param value رشته عددی با ارقام انگلیسی و نقطه استاندارد.
+ * @param maxDecimals حداکثر تعداد اعشار مجاز (undefined یعنی بدون محدودیت).
+ * @returns رشته گرد شده یا محدود شده.
+ */
+export declare const roundToDecimals: (value: string, maxDecimals?: number) => string;
 //# sourceMappingURL=digitUtils.d.ts.map
