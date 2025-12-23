@@ -1,134 +1,135 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import Decimal from 'decimal.js';
-import { transformNumber, TransformNumberOptions } from '../utils/transformNumber';
-import { sanitizeNumericInput, roundToDecimals } from '../utils/digitUtils';
+import React, { useState, useCallback, useRef, useLayoutEffect } from "react";
+import Decimal from "decimal.js";
+import {
+  transformNumber,
+  TransformNumberOptions,
+} from "../utils/transformNumber";
+import { sanitizeNumericInput } from "../utils/digitUtils";
 
-const INVALID_RANGE_SIGNAL = Symbol("INVALID_RANGE");
-
-interface UsePersianNumberInputProps extends Omit<TransformNumberOptions, 'maxDecimals'> {
+interface UsePersianNumberInputProps
+  extends Omit<TransformNumberOptions, "maxDecimals"> {
   initialValue?: number | string;
   onValueChange?: (value: string | undefined) => void;
   min?: number;
   max?: number;
   maxDecimals?: number;
-  inputDecimalSeparator?: string;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
 }
 
-interface UsePersianNumberInputReturn {
-  value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  setValue: (newValue: number | string | undefined) => void;
-  rawValue: string | undefined;
-}
+export const usePersianNumberInput = (
+  props: UsePersianNumberInputProps = {}
+) => {
+  const {
+    initialValue,
+    separatorCount = 3,
+    separatorChar = ",",
+    locale = "fa",
+    showZero = false,
+    onValueChange,
+    min,
+    max,
+    maxDecimals,
+    onBlur: externalOnBlur,
+  } = props;
 
-export const usePersianNumberInput = ({
-  initialValue,
-  separatorCount = 3,
-  separatorChar = ',',
-  locale = 'fa',
-  showZero = false,
-  onValueChange,
-  min,
-  max,
-  maxDecimals,
-  inputDecimalSeparator = '.',
-}: UsePersianNumberInputProps = {}): UsePersianNumberInputReturn => {
+  const [rawValue, setRawValue] = useState<string | undefined>(() =>
+    sanitizeNumericInput(initialValue, maxDecimals)
+  );
 
-  const getSanitizedRoundedAndCheckedValue = useCallback((val: number | string | undefined): string | undefined | typeof INVALID_RANGE_SIGNAL => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef<number | null>(null);
 
-    if (val === null || val === undefined) return undefined;
-
-    let sanitized = sanitizeNumericInput(String(val), inputDecimalSeparator);
-
-    if (sanitized === '-' || sanitized === '.' || sanitized === '-.') {
-    } else if (sanitized) { 
-      try {
-        const numericValue = new Decimal(sanitized);
-
-        if (min !== undefined && numericValue.lt(min)) {
-          console.warn(`Value ${sanitized} is less than min ${min}. Input ignored.`);
-          return INVALID_RANGE_SIGNAL; 
-        }
-        if (max !== undefined && numericValue.gt(max)) {
-          console.warn(`Value ${sanitized} exceeds max ${max}. Input ignored.`);
-          return INVALID_RANGE_SIGNAL; 
-        }
-
-        sanitized = roundToDecimals(sanitized, maxDecimals);
-
-      } catch (error) {
-        console.warn(`Error processing sanitized value: ${sanitized}`, error);
-        return undefined; 
-      }
-    } else {
-      return undefined;
+  useLayoutEffect(() => {
+    if (inputRef.current && selectionRef.current !== null) {
+      inputRef.current.setSelectionRange(
+        selectionRef.current,
+        selectionRef.current
+      );
     }
-
-    if (!showZero) {
-        if (sanitized === '-' || sanitized === '.' || sanitized === '-.') {
-            return undefined;
-        }
-        try {
-             if (sanitized && new Decimal(sanitized).isZero() && !sanitized.endsWith('.')) {
-                 return undefined;
-             }
-        } catch {}
-    }
-
-    return sanitized === '' ? undefined : sanitized;
-
-  }, [inputDecimalSeparator, min, max, maxDecimals, showZero]);
-
-
-  const [rawValue, setRawValue] = useState<string | undefined>(() => {
-      const initialProcessed = getSanitizedRoundedAndCheckedValue(initialValue);
-      return initialProcessed === INVALID_RANGE_SIGNAL ? undefined : initialProcessed;
   });
 
-
-  const displayValue = useMemo(() => {
-    const options = { separatorCount, separatorChar, locale, showZero, maxDecimals };
-    return transformNumber(rawValue, options);
-  }, [rawValue, separatorCount, separatorChar, locale, showZero, maxDecimals]);
-
-
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const inputValue = event.target.value;
-      const processedValue = getSanitizedRoundedAndCheckedValue(inputValue);
-
-      if (processedValue === INVALID_RANGE_SIGNAL) {
-        return;
-      }
-
-      if (processedValue !== rawValue) {
-        setRawValue(processedValue);
-        if (onValueChange) {
-          onValueChange(processedValue);
+  const updateValue = useCallback(
+    (nextRaw: string) => {
+      if (
+        nextRaw !== "" &&
+        nextRaw !== "-" &&
+        nextRaw !== "." &&
+        nextRaw !== "-."
+      ) {
+        try {
+          const num = new Decimal(nextRaw);
+          if (max !== undefined && num.gt(max)) return;
+        } catch {
+          return;
         }
       }
+      setRawValue(nextRaw);
+      onValueChange?.(nextRaw);
     },
-    [rawValue, getSanitizedRoundedAndCheckedValue, onValueChange]
+    [max, onValueChange]
   );
 
-  const handleSetValue = useCallback(
-    (newValue: number | string | undefined) => {
-      const processedValue = getSanitizedRoundedAndCheckedValue(newValue);
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const value = input.value;
+    const sanitized = sanitizeNumericInput(value, maxDecimals);
 
-      if (processedValue === INVALID_RANGE_SIGNAL) {
-        console.warn(`setValue ignored: Value ${newValue} is out of range [${min}, ${max}].`);
-        return;
-      }
+    const prevFormatted = transformNumber(rawValue, {
+      separatorCount,
+      separatorChar,
+      locale,
+      showZero,
+    });
+    const nextFormatted = transformNumber(sanitized, {
+      separatorCount,
+      separatorChar,
+      locale,
+      showZero,
+    });
 
-      if (processedValue !== rawValue) {
-        setRawValue(processedValue);
-        if (onValueChange) {
-          onValueChange(processedValue);
-        }
+    let cursor = input.selectionStart || 0;
+    const diff = nextFormatted.length - prevFormatted.length;
+    selectionRef.current = cursor + diff;
+
+    updateValue(sanitized);
+  };
+
+  const onBlur = useCallback(
+    (event: React.FocusEvent<HTMLInputElement>) => {
+      if (
+        rawValue &&
+        rawValue !== "-" &&
+        rawValue !== "." &&
+        rawValue !== "-."
+      ) {
+        try {
+          const num = new Decimal(rawValue);
+          if (min !== undefined && num.lt(min)) {
+            const minStr = String(min);
+            setRawValue(minStr);
+            onValueChange?.(minStr);
+          }
+        } catch {}
       }
+      externalOnBlur?.(event);
     },
-    [rawValue, min, max, getSanitizedRoundedAndCheckedValue, onValueChange] 
+    [rawValue, min, onValueChange, externalOnBlur]
   );
 
-  return { value: displayValue, onChange: handleChange, setValue: handleSetValue, rawValue };
+  const displayValue = transformNumber(rawValue, {
+    separatorCount,
+    separatorChar,
+    locale,
+    showZero,
+    maxDecimals,
+  });
+
+  return {
+    value: displayValue,
+    onChange,
+    onBlur,
+    rawValue,
+    inputRef,
+    setRawValue: updateValue,
+  };
 };

@@ -3,12 +3,11 @@ import {
   toLocalizedDigits,
   localizeDecimalSeparator,
 } from "./digitUtils";
-import Decimal from "decimal.js";
 
 export interface TransformNumberOptions {
   separatorCount?: number;
   separatorChar?: string;
-  locale?: "fa" | "en" | string;
+  locale?: "fa" | "en" | "ar" | string;
   maxDecimals?: number;
   showZero?: boolean;
 }
@@ -21,59 +20,29 @@ export const transformNumber = (
     separatorCount = 3,
     separatorChar = ",",
     locale = "fa",
-    maxDecimals,
     showZero = false,
   } = options || {};
 
   if (rawValue === null || rawValue === undefined || rawValue === "") {
-    return showZero ? toLocalizedDigits("0", locale as any) : "";
+    return showZero ? toLocalizedDigits("0", locale) : "";
   }
 
-  if (rawValue === "-") {
-    return "-";
-  }
-  if (rawValue === ".") {
-    const display = showZero ? "0." : ".";
-    const localizedDisplay = localizeDecimalSeparator(display, locale as any);
-    return toLocalizedDigits(localizedDisplay, locale as any);
-  }
-  if (rawValue === "-.") {
-    const display = showZero ? "-0." : "-.";
-    const localizedDisplay = localizeDecimalSeparator(display, locale as any);
-    return toLocalizedDigits(localizedDisplay, locale as any);
-  }
-
-  if (!/^-?\d*(\.\d*)?$/.test(rawValue)) {
-    console.warn(`Invalid rawValue passed to transformNumber: "${rawValue}"`);
-    return showZero ? toLocalizedDigits("0", locale as any) : "";
-  }
-
-  let isEffectivelyZero = false;
-  try {
-    if (rawValue !== "-" && rawValue !== "." && rawValue !== "-.") {
-      isEffectivelyZero = new Decimal(rawValue).isZero();
-    }
-  } catch {}
-
-  if (isEffectivelyZero && !showZero) {
-    if (!rawValue.endsWith(".")) {
-      return "";
-    }
-  }
+  if (rawValue === "-") return "-";
 
   let [integerPart, fractionalPart] = rawValue.split(".");
-  const hasTrailingDot = rawValue.endsWith(".") && fractionalPart === undefined;
-
-  if (integerPart === "" || integerPart === "-") {
-    integerPart = rawValue.startsWith("-") ? "-0" : "0";
-  }
+  const hasTrailingDot = rawValue.endsWith(".");
 
   const sign = integerPart.startsWith("-") ? "-" : "";
-  const absIntPart = integerPart.startsWith("-")
-    ? integerPart.substring(1)
-    : integerPart;
-  const groupedAbsInt = groupDigits(absIntPart, separatorCount, separatorChar);
-  const groupedInt = sign + groupedAbsInt;
+  const absIntPart =
+    integerPart.replace(/^-/, "") ||
+    (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
+
+  if (absIntPart === "" && !hasTrailingDot && fractionalPart === undefined) {
+    return sign === "-" ? "-" : showZero ? toLocalizedDigits("0", locale) : "";
+  }
+
+  const groupedInt =
+    sign + groupDigits(absIntPart, separatorCount, separatorChar);
 
   let finalStr = groupedInt;
   if (fractionalPart !== undefined) {
@@ -82,9 +51,9 @@ export const transformNumber = (
     finalStr = `${groupedInt}.`;
   }
 
-  if (locale && locale !== "en") {
-    finalStr = localizeDecimalSeparator(finalStr, locale as any);
-    finalStr = toLocalizedDigits(finalStr, locale as any);
+  if (locale !== "en") {
+    finalStr = localizeDecimalSeparator(finalStr, locale);
+    finalStr = toLocalizedDigits(finalStr, locale);
   }
 
   return finalStr;

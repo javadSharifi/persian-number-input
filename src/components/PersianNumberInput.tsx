@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import { usePersianNumberInput } from "../hooks/usePersianNumberInput";
 import type { TransformNumberOptions } from "../utils/transformNumber";
 
@@ -13,31 +13,13 @@ interface PersianNumberInputProps
   min?: number;
   max?: number;
   maxDecimals?: number;
-  inputDecimalSeparator?: string;
 }
 
-const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
-  initialValue,
-  separatorCount,
-  separatorChar,
-  locale,
-  showZero,
-  onValueChange,
-  min,
-  max,
-  maxDecimals,
-  inputDecimalSeparator,
-  ...restInputProps
-}) => {
-  if (maxDecimals !== undefined && maxDecimals < 0) {
-    console.warn("maxDecimals باید غیرمنفی باشد");
-    maxDecimals = 0;
-  }
-  if (min !== undefined && max !== undefined && min > max) {
-    console.warn("min نباید بزرگ‌تر از max باشد");
-  }
-
-  const { value: formattedValue, onChange } = usePersianNumberInput({
+const PersianNumberInput = forwardRef<
+  HTMLInputElement,
+  PersianNumberInputProps
+>((props, ref) => {
+  const {
     initialValue,
     separatorCount,
     separatorChar,
@@ -47,19 +29,39 @@ const PersianNumberInput: React.FC<PersianNumberInputProps> = ({
     min,
     max,
     maxDecimals,
-    inputDecimalSeparator, 
+    onBlur: propsOnBlur,
+    ...rest
+  } = props;
+
+  const { value, onChange, onBlur, inputRef } = usePersianNumberInput({
+    initialValue,
+    separatorCount,
+    separatorChar,
+    locale,
+    showZero,
+    onValueChange,
+    min,
+    max,
+    maxDecimals,
+    onBlur: propsOnBlur,
   });
+
+  useImperativeHandle(ref, () => inputRef.current!);
 
   return (
     <input
-      type="text" 
-      inputMode="decimal" 
-      dir="ltr" 
-      {...restInputProps} 
-      value={formattedValue} 
-      onChange={onChange} 
+      {...rest}
+      ref={inputRef}
+      type="text"
+      inputMode="decimal"
+      dir="ltr"
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
     />
   );
-};
+});
+
+PersianNumberInput.displayName = "PersianNumberInput";
 
 export default PersianNumberInput;

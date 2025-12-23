@@ -1,155 +1,114 @@
+const LOCAL_DIGITS_MAP: Record<string, string> = {
+  "۰": "0",
+  "۱": "1",
+  "۲": "2",
+  "۳": "3",
+  "۴": "4",
+  "۵": "5",
+  "۶": "6",
+  "۷": "7",
+  "۸": "8",
+  "۹": "9",
+  "٠": "0",
+  "١": "1",
+  "٢": "2",
+  "٣": "3",
+  "٤": "4",
+  "٥": "5",
+  "٦": "6",
+  "٧": "7",
+  "٨": "8",
+  "٩": "9",
+  "٫": ".",
+  "/": ".",
+};
 
-export const digitsMap: { [key: string]: ReadonlyArray<string> } = {
+export const digitsMap: Record<string, string[]> = {
   fa: ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"],
+  ar: ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"],
 };
 
-
-export const decimalSeparatorMap: { [key: string]: string } = {
+export const decimalSeparatorMap: Record<string, string> = {
   fa: "٫",
+  ar: "٫",
 };
 
-const allLocalizedDigits = Object.values(digitsMap).flat().join("");
-const conversionMap: { [key: string]: string } = {};
-for (const locale in digitsMap) {
-  digitsMap[locale].forEach((digit, index) => {
-    conversionMap[digit] = index.toString();
-  });
-}
-const localizedDigitsRegex = new RegExp(`[${allLocalizedDigits}]`, 'g');
-
-export const convertToEnglishDigits = (str: string): string => {
-  if (!str) return "";
-  return str.replace(localizedDigitsRegex, (char) => conversionMap[char] || char);
+export const toEnglishDigits = (str: string): string => {
+  return str.replace(
+    /[۰-۹٠-٩٫\/]/g,
+    (match) => LOCAL_DIGITS_MAP[match] || match
+  );
 };
 
-export const toLocalizedDigits = (numStr: string, locale: keyof typeof digitsMap): string => {
-  if (!numStr || !digitsMap[locale]) return numStr;
-  const localeDigits = digitsMap[locale];
+export const convertToEnglishDigits = toEnglishDigits;
+
+export const toLocalizedDigits = (numStr: string, locale: string): string => {
+  const targetLocale = digitsMap[locale] ? locale : "fa";
+  const localeDigits = digitsMap[targetLocale];
   return numStr.replace(/\d/g, (digit) => localeDigits[parseInt(digit, 10)]);
 };
 
-export const localizeDecimalSeparator = (numStr: string, locale: keyof typeof decimalSeparatorMap): string => {
-  const separator = decimalSeparatorMap[locale];
-  if (!separator || !numStr.includes('.')) return numStr;
-  return numStr.replace('.', separator);
+export const localizeDecimalSeparator = (
+  numStr: string,
+  locale: string
+): string => {
+  const targetLocale = decimalSeparatorMap[locale] ? locale : "fa";
+  const separator = decimalSeparatorMap[targetLocale];
+  if (!separator || !numStr.includes(".")) return numStr;
+  return numStr.replace(".", separator);
 };
 
 export const groupDigits = (
   numStr: string,
   separatorCount: number,
-  separatorChar = ','
+  separatorChar = ","
 ): string => {
-  if (!numStr || separatorCount <= 0) {
-    return numStr;
-  }
-  const regex = new RegExp(`\\B(?=(\\d{${separatorCount}})+(?!\\d))`, 'g');
+  if (!numStr || separatorCount <= 0) return numStr;
+  const regex = new RegExp(`\\B(?=(\\d{${separatorCount}})+(?!\\d))`, "g");
   return numStr.replace(regex, separatorChar);
 };
 
-
-
 export const sanitizeNumericInput = (
-    value: string | number | null | undefined,
-    inputDecimalSeparator: string = '.'
+  value: string | number | null | undefined,
+  maxDecimals?: number
 ): string => {
-    if (value === null || value === undefined) return '';
-    let str = String(value);
+  if (value === null || value === undefined) return "";
+  let str = toEnglishDigits(String(value));
 
-    str = convertToEnglishDigits(str);
+  const isNegative = str.startsWith("-");
+  str = str.replace(/[^-0-9.]/g, "");
 
-    str = str.replace(/٫/g, '.');
+  const parts = str.split(".");
+  if (parts.length > 2) {
+    str = parts[0] + "." + parts.slice(1).join("");
+  }
 
-    const standardSeparator = '.';
-    if (inputDecimalSeparator && inputDecimalSeparator !== standardSeparator) {
-        const escapedSeparator = inputDecimalSeparator.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const sepRegex = new RegExp(escapedSeparator, 'g');
-        str = str.replace(sepRegex, standardSeparator);
+  if (isNegative) {
+    str = "-" + str.replace(/-/g, "");
+  } else {
+    str = str.replace(/-/g, "");
+  }
+
+  if (str.includes(".")) {
+    const [intPart, fracPart] = str.split(".");
+    if (maxDecimals !== undefined) {
+      const truncatedFrac =
+        maxDecimals > 0 ? fracPart.slice(0, maxDecimals) : "";
+      str = truncatedFrac ? `${intPart}.${truncatedFrac}` : intPart;
+      if (maxDecimals > 0 && String(value).endsWith(".")) {
+        str = str.includes(".") ? str : `${str}.`;
+      }
     }
+  }
 
-    const negative = str.startsWith('-');
-    str = str.replace(/[^0-9.]/g, '');
-
-    const firstDotIndex = str.indexOf(standardSeparator);
-    if (firstDotIndex !== -1) {
-        const integerPart = str.substring(0, firstDotIndex);
-        const fractionalPart = str.substring(firstDotIndex + 1).replace(/\./g, '');
-        str = `${integerPart}${standardSeparator}${fractionalPart}`;
-    }
-
-    
-    if (negative && str !== '' && str !== standardSeparator) {
-        str = `-${str}`;
-    }
-    let sign = '';
-    let numericPart = str;
-    if (str.startsWith('-')) {
-        sign = '-';
-        numericPart = str.substring(1);
-    }
-
-    let [intPart, fracPart] = numericPart.split(standardSeparator);
-
-    if (intPart && intPart.length > 1 && intPart.startsWith('0')) {
-        intPart = intPart.replace(/^0+/, '');
-        if (intPart === '') intPart = '0'; 
-    } else if (intPart === '') {
-
-        if (fracPart !== undefined) {
-            intPart = '0';
-        }
-    }
-
-    if (fracPart !== undefined) {
-        str = `${sign}${intPart}${standardSeparator}${fracPart}`;
-    } else if (intPart !== undefined) {
-        str = `${sign}${intPart}`;
-        if (value === inputDecimalSeparator && sign === '') {
-             str = '.';
-        }
-         if (value === '-' && sign === '-' && intPart === undefined) {
-             str = '-';
-         }
-    } else if (sign === '-' && value === '-') {
-         str = '-';
-    } else {
-        str = '';
-    }
-
-
-     if (value === '-') return '-';
-     if (String(value).endsWith(inputDecimalSeparator) && str === `${sign}${intPart}`) {
-         return `${str}${standardSeparator}`;
-     }
-
-
-    return str;
+  return str;
 };
 
-
-export const roundToDecimals = (value: string, maxDecimals?: number): string => {
-    if (maxDecimals === undefined || !value || !value.includes('.')) {
-        return value;
-    }
-
-    const standardSeparator = '.';
-    const endsWithSeparator = value.endsWith(standardSeparator);
-    let [integerPart, fractionalPart = ''] = value.split(standardSeparator);
-
-    if (maxDecimals <= 0) {
-        return integerPart === '' && value.startsWith('-') ? "-0" : (integerPart || "0");
-         return integerPart || "0";
-    }
-
-    const trimmedFractional = fractionalPart.slice(0, maxDecimals);
-
-    if (trimmedFractional) {
-        return `${integerPart}${standardSeparator}${trimmedFractional}`;
-    } else {
-
-        if (endsWithSeparator) {
-            return `${integerPart}${standardSeparator}`;
-        } else {
-            return integerPart;
-        }
-    }
+export const roundToDecimals = (
+  value: string,
+  maxDecimals?: number
+): string => {
+  if (maxDecimals === undefined || !value || !value.includes(".")) return value;
+  const [int, frac] = value.split(".");
+  return maxDecimals > 0 ? `${int}.${frac.slice(0, maxDecimals)}` : int;
 };
