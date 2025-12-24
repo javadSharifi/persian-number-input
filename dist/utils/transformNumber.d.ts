@@ -1,6 +1,7 @@
 export interface TransformNumberOptions {
     separatorCount?: number;
     separatorChar?: string;
+    decimalChar?: string;
     locale?: "fa" | "en" | "ar" | string;
     maxDecimals?: number;
     showZero?: boolean;

@@ -7,6 +7,7 @@ import {
 export interface TransformNumberOptions {
   separatorCount?: number;
   separatorChar?: string;
+  decimalChar?: string;
   locale?: "fa" | "en" | "ar" | string;
   maxDecimals?: number;
   showZero?: boolean;
@@ -19,6 +20,7 @@ export const transformNumber = (
   const {
     separatorCount = 3,
     separatorChar = ",",
+    decimalChar,
     locale = "fa",
     showZero = false,
   } = options || {};
@@ -46,8 +48,11 @@ export const transformNumber = (
     finalStr = `${groupedInt}.`;
   }
 
+  if (decimalChar || locale !== "en") {
+    finalStr = localizeDecimalSeparator(finalStr, locale, decimalChar);
+  }
+
   if (locale !== "en") {
-    finalStr = localizeDecimalSeparator(finalStr, locale);
     finalStr = toLocalizedDigits(finalStr, locale);
   }
 

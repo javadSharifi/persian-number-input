@@ -15,11 +15,12 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const usePersianNumberInput_1 = require("../hooks/usePersianNumberInput");
 const PersianNumberInput = (0, react_1.forwardRef)((props, ref) => {
-    const { initialValue, separatorCount, separatorChar, locale, showZero, onValueChange, min, max, maxDecimals, onBlur: propsOnBlur } = props, rest = __rest(props, ["initialValue", "separatorCount", "separatorChar", "locale", "showZero", "onValueChange", "min", "max", "maxDecimals", "onBlur"]);
+    const { initialValue, separatorCount, separatorChar, decimalChar, locale, showZero, onValueChange, min, max, maxDecimals, onBlur: propsOnBlur } = props, rest = __rest(props, ["initialValue", "separatorCount", "separatorChar", "decimalChar", "locale", "showZero", "onValueChange", "min", "max", "maxDecimals", "onBlur"]);
     const { value, onChange, onBlur, inputRef } = (0, usePersianNumberInput_1.usePersianNumberInput)({
         initialValue,
         separatorCount,
         separatorChar,
+        decimalChar,
         locale,
         showZero,
         onValueChange,

@@ -33,8 +33,12 @@ exports.decimalSeparatorMap = {
     fa: "٫",
     ar: "٫",
 };
-const toEnglishDigits = (str) => {
-    return str.replace(/[۰-۹٠-٩٫\/]/g, (match) => LOCAL_DIGITS_MAP[match] || match);
+const toEnglishDigits = (str, decimalChar) => {
+    let result = str.replace(/[۰-۹٠-٩٫\/]/g, (match) => LOCAL_DIGITS_MAP[match] || match);
+    if (decimalChar && decimalChar !== "." && result.includes(decimalChar)) {
+        result = result.split(decimalChar).join(".");
+    }
+    return result;
 };
 exports.toEnglishDigits = toEnglishDigits;
 exports.convertToEnglishDigits = exports.toEnglishDigits;
@@ -44,11 +48,10 @@ const toLocalizedDigits = (numStr, locale) => {
     return numStr.replace(/\d/g, (digit) => localeDigits[parseInt(digit, 10)]);
 };
 exports.toLocalizedDigits = toLocalizedDigits;
-const localizeDecimalSeparator = (numStr, locale) => {
-    const targetLocale = exports.decimalSeparatorMap[locale] ? locale : "fa";
-    const separator = exports.decimalSeparatorMap[targetLocale];
-    if (!separator || !numStr.includes("."))
+const localizeDecimalSeparator = (numStr, locale, customDecimalChar) => {
+    if (!numStr.includes("."))
         return numStr;
+    const separator = customDecimalChar || exports.decimalSeparatorMap[locale] || "٫";
     return numStr.replace(".", separator);
 };
 exports.localizeDecimalSeparator = localizeDecimalSeparator;
@@ -59,10 +62,10 @@ const groupDigits = (numStr, separatorCount, separatorChar = ",") => {
     return numStr.replace(regex, separatorChar);
 };
 exports.groupDigits = groupDigits;
-const sanitizeNumericInput = (value, maxDecimals) => {
+const sanitizeNumericInput = (value, maxDecimals, decimalChar) => {
     if (value === null || value === undefined)
         return "";
-    let str = (0, exports.toEnglishDigits)(String(value));
+    let str = (0, exports.toEnglishDigits)(String(value), decimalChar);
     str = str.replace(/[^0-9.]/g, "");
     const parts = str.split(".");
     if (parts.length > 2) {
@@ -74,7 +77,7 @@ const sanitizeNumericInput = (value, maxDecimals) => {
         if (maxDecimals !== undefined) {
             const truncatedFrac = maxDecimals > 0 ? fracPart.slice(0, maxDecimals) : "";
             str = truncatedFrac ? `${intPart}.${truncatedFrac}` : intPart;
-            if (maxDecimals > 0 && String(value).endsWith(".")) {
+            if (maxDecimals > 0 && String(value).endsWith(decimalChar || ".")) {
                 str = str.includes(".") ? str : `${str}.`;
             }
         }

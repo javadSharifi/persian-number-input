@@ -23,6 +23,7 @@ export const usePersianNumberInput = (
     initialValue,
     separatorCount = 3,
     separatorChar = ",",
+    decimalChar,
     locale = "fa",
     showZero = false,
     onValueChange,
@@ -33,7 +34,7 @@ export const usePersianNumberInput = (
   } = props;
 
   const [rawValue, setRawValue] = useState<string | undefined>(() =>
-    sanitizeNumericInput(initialValue, maxDecimals)
+    sanitizeNumericInput(initialValue, maxDecimals, decimalChar)
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,17 +68,19 @@ export const usePersianNumberInput = (
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target;
     const value = input.value;
-    const sanitized = sanitizeNumericInput(value, maxDecimals);
+    const sanitized = sanitizeNumericInput(value, maxDecimals, decimalChar);
 
     const prevFormatted = transformNumber(rawValue, {
       separatorCount,
       separatorChar,
+      decimalChar,
       locale,
       showZero,
     });
     const nextFormatted = transformNumber(sanitized, {
       separatorCount,
       separatorChar,
+      decimalChar,
       locale,
       showZero,
     });
@@ -109,6 +112,7 @@ export const usePersianNumberInput = (
   const displayValue = transformNumber(rawValue, {
     separatorCount,
     separatorChar,
+    decimalChar,
     locale,
     showZero,
     maxDecimals,

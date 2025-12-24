@@ -33,11 +33,17 @@ export const decimalSeparatorMap: Record<string, string> = {
   ar: "٫",
 };
 
-export const toEnglishDigits = (str: string): string => {
-  return str.replace(
+export const toEnglishDigits = (str: string, decimalChar?: string): string => {
+  let result = str.replace(
     /[۰-۹٠-٩٫\/]/g,
     (match) => LOCAL_DIGITS_MAP[match] || match
   );
+
+  if (decimalChar && decimalChar !== "." && result.includes(decimalChar)) {
+    result = result.split(decimalChar).join(".");
+  }
+
+  return result;
 };
 
 export const convertToEnglishDigits = toEnglishDigits;
@@ -50,11 +56,11 @@ export const toLocalizedDigits = (numStr: string, locale: string): string => {
 
 export const localizeDecimalSeparator = (
   numStr: string,
-  locale: string
+  locale: string,
+  customDecimalChar?: string
 ): string => {
-  const targetLocale = decimalSeparatorMap[locale] ? locale : "fa";
-  const separator = decimalSeparatorMap[targetLocale];
-  if (!separator || !numStr.includes(".")) return numStr;
+  if (!numStr.includes(".")) return numStr;
+  const separator = customDecimalChar || decimalSeparatorMap[locale] || "٫";
   return numStr.replace(".", separator);
 };
 
@@ -70,10 +76,11 @@ export const groupDigits = (
 
 export const sanitizeNumericInput = (
   value: string | number | null | undefined,
-  maxDecimals?: number
+  maxDecimals?: number,
+  decimalChar?: string
 ): string => {
   if (value === null || value === undefined) return "";
-  let str = toEnglishDigits(String(value));
+  let str = toEnglishDigits(String(value), decimalChar);
 
   str = str.replace(/[^0-9.]/g, "");
 
@@ -90,7 +97,7 @@ export const sanitizeNumericInput = (
       const truncatedFrac =
         maxDecimals > 0 ? fracPart.slice(0, maxDecimals) : "";
       str = truncatedFrac ? `${intPart}.${truncatedFrac}` : intPart;
-      if (maxDecimals > 0 && String(value).endsWith(".")) {
+      if (maxDecimals > 0 && String(value).endsWith(decimalChar || ".")) {
         str = str.includes(".") ? str : `${str}.`;
       }
     }

@@ -9,8 +9,8 @@ const decimal_js_1 = __importDefault(require("decimal.js"));
 const transformNumber_1 = require("../utils/transformNumber");
 const digitUtils_1 = require("../utils/digitUtils");
 const usePersianNumberInput = (props = {}) => {
-    const { initialValue, separatorCount = 3, separatorChar = ",", locale = "fa", showZero = false, onValueChange, min, max, maxDecimals, onBlur: externalOnBlur, } = props;
-    const [rawValue, setRawValue] = (0, react_1.useState)(() => (0, digitUtils_1.sanitizeNumericInput)(initialValue, maxDecimals));
+    const { initialValue, separatorCount = 3, separatorChar = ",", decimalChar, locale = "fa", showZero = false, onValueChange, min, max, maxDecimals, onBlur: externalOnBlur, } = props;
+    const [rawValue, setRawValue] = (0, react_1.useState)(() => (0, digitUtils_1.sanitizeNumericInput)(initialValue, maxDecimals, decimalChar));
     const inputRef = (0, react_1.useRef)(null);
     const selectionRef = (0, react_1.useRef)(null);
     (0, react_1.useLayoutEffect)(() => {
@@ -35,16 +35,18 @@ const usePersianNumberInput = (props = {}) => {
     const onChange = (event) => {
         const input = event.target;
         const value = input.value;
-        const sanitized = (0, digitUtils_1.sanitizeNumericInput)(value, maxDecimals);
+        const sanitized = (0, digitUtils_1.sanitizeNumericInput)(value, maxDecimals, decimalChar);
         const prevFormatted = (0, transformNumber_1.transformNumber)(rawValue, {
             separatorCount,
             separatorChar,
+            decimalChar,
             locale,
             showZero,
         });
         const nextFormatted = (0, transformNumber_1.transformNumber)(sanitized, {
             separatorCount,
             separatorChar,
+            decimalChar,
             locale,
             showZero,
         });
@@ -70,6 +72,7 @@ const usePersianNumberInput = (props = {}) => {
     const displayValue = (0, transformNumber_1.transformNumber)(rawValue, {
         separatorCount,
         separatorChar,
+        decimalChar,
         locale,
         showZero,
         maxDecimals,
