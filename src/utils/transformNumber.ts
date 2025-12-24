@@ -27,22 +27,17 @@ export const transformNumber = (
     return showZero ? toLocalizedDigits("0", locale) : "";
   }
 
-  if (rawValue === "-") return "-";
-
   let [integerPart, fractionalPart] = rawValue.split(".");
   const hasTrailingDot = rawValue.endsWith(".");
 
-  const sign = integerPart.startsWith("-") ? "-" : "";
   const absIntPart =
-    integerPart.replace(/^-/, "") ||
-    (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
+    integerPart || (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
 
   if (absIntPart === "" && !hasTrailingDot && fractionalPart === undefined) {
-    return sign === "-" ? "-" : showZero ? toLocalizedDigits("0", locale) : "";
+    return showZero ? toLocalizedDigits("0", locale) : "";
   }
 
-  const groupedInt =
-    sign + groupDigits(absIntPart, separatorCount, separatorChar);
+  const groupedInt = groupDigits(absIntPart, separatorCount, separatorChar);
 
   let finalStr = groupedInt;
   if (fractionalPart !== undefined) {

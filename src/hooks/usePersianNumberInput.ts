@@ -50,12 +50,7 @@ export const usePersianNumberInput = (
 
   const updateValue = useCallback(
     (nextRaw: string) => {
-      if (
-        nextRaw !== "" &&
-        nextRaw !== "-" &&
-        nextRaw !== "." &&
-        nextRaw !== "-."
-      ) {
+      if (nextRaw !== "" && nextRaw !== ".") {
         try {
           const num = new Decimal(nextRaw);
           if (max !== undefined && num.gt(max)) return;
@@ -96,12 +91,7 @@ export const usePersianNumberInput = (
 
   const onBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
-      if (
-        rawValue &&
-        rawValue !== "-" &&
-        rawValue !== "." &&
-        rawValue !== "-."
-      ) {
+      if (rawValue && rawValue !== ".") {
         try {
           const num = new Decimal(rawValue);
           if (min !== undefined && num.lt(min)) {

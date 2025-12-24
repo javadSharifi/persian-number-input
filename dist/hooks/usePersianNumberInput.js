@@ -8,7 +8,8 @@ const react_1 = require("react");
 const decimal_js_1 = __importDefault(require("decimal.js"));
 const transformNumber_1 = require("../utils/transformNumber");
 const digitUtils_1 = require("../utils/digitUtils");
-const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar = ",", locale = "fa", showZero = false, onValueChange, min, max, maxDecimals, } = {}) => {
+const usePersianNumberInput = (props = {}) => {
+    const { initialValue, separatorCount = 3, separatorChar = ",", locale = "fa", showZero = false, onValueChange, min, max, maxDecimals, onBlur: externalOnBlur, } = props;
     const [rawValue, setRawValue] = (0, react_1.useState)(() => (0, digitUtils_1.sanitizeNumericInput)(initialValue, maxDecimals));
     const inputRef = (0, react_1.useRef)(null);
     const selectionRef = (0, react_1.useRef)(null);
@@ -18,14 +19,9 @@ const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar
         }
     });
     const updateValue = (0, react_1.useCallback)((nextRaw) => {
-        if (nextRaw !== "" &&
-            nextRaw !== "-" &&
-            nextRaw !== "." &&
-            nextRaw !== "-.") {
+        if (nextRaw !== "" && nextRaw !== ".") {
             try {
                 const num = new decimal_js_1.default(nextRaw);
-                if (min !== undefined && num.lt(min))
-                    return;
                 if (max !== undefined && num.gt(max))
                     return;
             }
@@ -35,7 +31,7 @@ const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar
         }
         setRawValue(nextRaw);
         onValueChange === null || onValueChange === void 0 ? void 0 : onValueChange(nextRaw);
-    }, [min, max, onValueChange]);
+    }, [max, onValueChange]);
     const onChange = (event) => {
         const input = event.target;
         const value = input.value;
@@ -54,9 +50,23 @@ const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar
         });
         let cursor = input.selectionStart || 0;
         const diff = nextFormatted.length - prevFormatted.length;
-        selectionRef.current = cursor + (diff > 0 ? diff : diff);
+        selectionRef.current = cursor + diff;
         updateValue(sanitized);
     };
+    const onBlur = (0, react_1.useCallback)((event) => {
+        if (rawValue && rawValue !== ".") {
+            try {
+                const num = new decimal_js_1.default(rawValue);
+                if (min !== undefined && num.lt(min)) {
+                    const minStr = String(min);
+                    setRawValue(minStr);
+                    onValueChange === null || onValueChange === void 0 ? void 0 : onValueChange(minStr);
+                }
+            }
+            catch (_a) { }
+        }
+        externalOnBlur === null || externalOnBlur === void 0 ? void 0 : externalOnBlur(event);
+    }, [rawValue, min, onValueChange, externalOnBlur]);
     const displayValue = (0, transformNumber_1.transformNumber)(rawValue, {
         separatorCount,
         separatorChar,
@@ -67,6 +77,7 @@ const usePersianNumberInput = ({ initialValue, separatorCount = 3, separatorChar
     return {
         value: displayValue,
         onChange,
+        onBlur,
         rawValue,
         inputRef,
         setRawValue: updateValue,

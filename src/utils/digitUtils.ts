@@ -75,19 +75,14 @@ export const sanitizeNumericInput = (
   if (value === null || value === undefined) return "";
   let str = toEnglishDigits(String(value));
 
-  const isNegative = str.startsWith("-");
-  str = str.replace(/[^-0-9.]/g, "");
+  str = str.replace(/[^0-9.]/g, "");
 
   const parts = str.split(".");
   if (parts.length > 2) {
     str = parts[0] + "." + parts.slice(1).join("");
   }
 
-  if (isNegative) {
-    str = "-" + str.replace(/-/g, "");
-  } else {
-    str = str.replace(/-/g, "");
-  }
+  str = str.replace(/^0+(?!$|\.)/, "");
 
   if (str.includes(".")) {
     const [intPart, fracPart] = str.split(".");

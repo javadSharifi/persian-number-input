@@ -6,10 +6,12 @@ interface UsePersianNumberInputProps extends Omit<TransformNumberOptions, "maxDe
     min?: number;
     max?: number;
     maxDecimals?: number;
+    onBlur?: React.FocusEventHandler<HTMLInputElement>;
 }
-export declare const usePersianNumberInput: ({ initialValue, separatorCount, separatorChar, locale, showZero, onValueChange, min, max, maxDecimals, }?: UsePersianNumberInputProps) => {
+export declare const usePersianNumberInput: (props?: UsePersianNumberInputProps) => {
     value: string;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
     rawValue: string | undefined;
     inputRef: React.RefObject<HTMLInputElement | null>;
     setRawValue: (nextRaw: string) => void;

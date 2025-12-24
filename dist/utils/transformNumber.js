@@ -7,17 +7,13 @@ const transformNumber = (rawValue, options) => {
     if (rawValue === null || rawValue === undefined || rawValue === "") {
         return showZero ? (0, digitUtils_1.toLocalizedDigits)("0", locale) : "";
     }
-    if (rawValue === "-")
-        return "-";
     let [integerPart, fractionalPart] = rawValue.split(".");
     const hasTrailingDot = rawValue.endsWith(".");
-    const sign = integerPart.startsWith("-") ? "-" : "";
-    const absIntPart = integerPart.replace(/^-/, "") ||
-        (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
+    const absIntPart = integerPart || (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
     if (absIntPart === "" && !hasTrailingDot && fractionalPart === undefined) {
-        return sign === "-" ? "-" : showZero ? (0, digitUtils_1.toLocalizedDigits)("0", locale) : "";
+        return showZero ? (0, digitUtils_1.toLocalizedDigits)("0", locale) : "";
     }
-    const groupedInt = sign + (0, digitUtils_1.groupDigits)(absIntPart, separatorCount, separatorChar);
+    const groupedInt = (0, digitUtils_1.groupDigits)(absIntPart, separatorCount, separatorChar);
     let finalStr = groupedInt;
     if (fractionalPart !== undefined) {
         finalStr = `${groupedInt}.${fractionalPart}`;
