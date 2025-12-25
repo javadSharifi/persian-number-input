@@ -53,6 +53,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
     "decimal.js": "^10.6.0"
   }
 }
