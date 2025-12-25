@@ -1,6 +1,6 @@
 {
   "name": "persian-number-input",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "React component for Persian, Indic, or English localized number input with customizable digit grouping",
   "main": "dist/index.js",
   "module": "dist/index.js",

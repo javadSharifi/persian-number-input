@@ -1,389 +1,461 @@
 # Persian Number Input
 
-🌟 **React Persian Number Input Component**
+[فارسی](./README.fa.md) | English
+A lightweight, powerful React library for handling Persian (Farsi) and Arabic number inputs with automatic digit conversion, formatting, and localization support.
+
+[![npm version](https://img.shields.io/npm/v/persian-number-input.svg)](https://www.npmjs.com/package/persian-number-input)
+[![npm downloads](https://img.shields.io/npm/dm/persian-number-input.svg)](https://www.npmjs.com/package/persian-number-input)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/persian-number-input)](https://bundlephobia.com/package/persian-number-input)
+[![license](https://img.shields.io/npm/l/persian-number-input.svg)](https://github.com/javadSharifi/persian-number-input/blob/main/LICENSE)
+
+## 🚀 [Live Demo](https://persian-number-input.netlify.app/)
+---
+
+Experience the component in action with our interactive demo!
+
+## 📊 Bundle Size
+
+This library is extremely lightweight:
+
+```
+persian-number-input: ~1KB (minified + gzipped)
+```
+
+![Bundle Size Comparison](./public/size.png)
+
 
 ---
 
-English 🇺🇸 | فارسی 🇮🇷
+## ✨ Features
+
+- 🔢 **Automatic Digit Conversion** - Seamlessly converts Persian (۰-۹) and Arabic (٠-٩) digits to English and vice versa
+- 🌍 **Multi-locale Support** - Built-in support for Persian (fa), Arabic (ar), and English (en)
+- 📊 **Number Formatting** - Automatic thousand separators with customizable characters
+- 💰 **Currency Ready** - Add prefixes, suffixes, and custom decimal separators
+- ⚡ **Lightweight** - Tiny bundle size with zero dependencies (except decimal.js for precision)
+- 🎯 **Type-Safe** - Full TypeScript support with complete type definitions
+- ♿ **Accessible** - Follows best practices for input accessibility
+- 🎨 **Customizable** - Extensive configuration options for any use case
+- 🔄 **Real-time Formatting** - Format numbers as users type with cursor position preservation
+- ✅ **Validation** - Built-in min/max value validation and decimal precision control
 
 ---
 
-## English
-
-**Persian Number Input** - A powerful React component and utility for formatting and handling numbers in Persian, English, or other localized digit systems. Perfect for multilingual applications requiring numeric inputs with customizable formatting, including decimal support.
-
-✅ **Key Features:**
-
-- Supports Persian, English, and other digit localization (e.g., Indic)
-- Customizable digit grouping (e.g., thousands separator)
-- Handles decimal numbers with configurable precision using ``
-- Min/max value constraints for input validation, including decimals
-- Converts localized digits to standard English digits for processing
-- Lightweight and compatible with React 16 to 19
-- TypeScript support for robust development
-
-### 🚀 Installation
-
-Install the package via npm or yarn:
+## 📦 Installation
 
 ```bash
-npm install persian-number-input 
+npm install persian-number-input
 ```
 
-### 💻 Usage Examples
+```bash
+yarn add persian-number-input
+```
 
-#### 1. Using `PersianNumberInput` Component
+```bash
+pnpm add persian-number-input
+```
 
-This component is ideal for form inputs requiring localized number formatting.
+---
 
-```jsx
-import React, { useState } from "react";
+## 🎯 Quick Start
+
+### Basic Usage
+
+```tsx
 import { PersianNumberInput } from "persian-number-input";
 
-const App = () => {
-  const [number, setNumber] = useState("");
-
+function App() {
   return (
     <PersianNumberInput
-      initialValue="123456.78"
-      separatorCount={3}
-      separatorChar=","
+      initialValue={1234567}
       locale="fa"
-      maxDecimals={2}
-      min={0.5}
-      max={1000000.999}
-      showZero={true}
-      onValueChange={(val) => setNumber(val || "")}
-      placeholder="Enter a number"
-      className="numeric-input"
+      onValueChange={(value) => console.log(value)}
     />
   );
-};
-
-export default App;
+}
 ```
 
-**Output**:
+**Output:** `۱,۲۳۴,۵۶۷`
+
+---
+
+## 📚 Usage Examples
+
+### Currency Input (Persian Toman)
+
+```tsx
+<PersianNumberInput
+  initialValue={5000000}
+  locale="fa"
+  suffix="تومان"
+  separatorCount={3}
+  separatorChar=","
+  onValueChange={(value) => console.log(value)}
+/>
 ```
-Input: 123456.78
-Displayed Output: ۱۲۳,۴۵۶٫۷۸
-English Output: 123456.78
+
+**Output:** `۵,۰۰۰,۰۰۰ تومان`
+
+---
+
+### Decimal Numbers with Custom Separator
+
+```tsx
+<PersianNumberInput
+  initialValue={1234.56}
+  locale="fa"
+  maxDecimals={2}
+  decimalChar="٫"
+  separatorChar=","
+  onValueChange={(value) => console.log(value)}
+/>
 ```
 
-#### 2. Using `usePersianNumberInput` Hook
+**Output:** `۱,۲۳۴٫۵۶`
 
-The `usePersianNumberInput` hook provides fine-grained control for custom input handling.
+---
 
-```jsx
-import React from "react";
+### Price Input with Validation
+
+```tsx
+<PersianNumberInput
+  initialValue={0}
+  locale="fa"
+  min={0}
+  max={999999999}
+  suffix="ریال"
+  showZero={true}
+  onValueChange={(value) => console.log(value)}
+/>
+```
+
+**Output:** `۰ ریال`
+
+---
+
+### Arabic Locale
+
+```tsx
+<PersianNumberInput
+  initialValue={987654}
+  locale="ar"
+  separatorChar=","
+  suffix="ر.س"
+  onValueChange={(value) => console.log(value)}
+/>
+```
+
+**Output:** `٩٨٧,٦٥٤ ر.س`
+
+---
+
+### Using the Hook (Advanced)
+
+```tsx
 import { usePersianNumberInput } from "persian-number-input";
 
-const CustomInput = () => {
-  const { value, onChange, rawValue } = usePersianNumberInput({
-    initialValue: "5000.25",
-    separatorCount: 3,
-    separatorChar: ",",
+function CustomInput() {
+  const { value, onChange, onBlur, rawValue } = usePersianNumberInput({
+    initialValue: 1000,
     locale: "fa",
+    separatorCount: 3,
     maxDecimals: 2,
-    min: 0.5,
-    max: 10000.999,
-    showZero: true,
+    min: 0,
+    max: 1000000,
+    onValueChange: (val) => {
+      console.log("Raw value:", val); // "1000"
+      console.log("Displayed value:", value); // "۱,۰۰۰"
+    },
   });
 
   return (
-    <div>
-      <input
-        type="text"
-        inputMode="decimal"
-        value={value}
-        onChange={onChange}
-        placeholder="Enter a number"
-      />
-      <p>Raw Value: {rawValue || "N/A"}</p>
-    </div>
+    <input
+      type="text"
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      className="custom-input"
+    />
   );
-};
-
-export default CustomInput;
+}
 ```
-
-**Explanation**:
-- The hook manages the input state and formatting, returning `value` (formatted for display) and `rawValue` (English digits).
-- Use this for custom input components or non-standard form controls.
-- **Output**:
-  ```
-  Displayed Input:ავ۰٫۲۵
-  Raw Value: 5000.25
-  ```
-
-#### 3. Using `transformNumber` Utility
-
-The `transformNumber` function formats numbers without requiring a React component, ideal for display-only scenarios.
-
-```javascript
-import { transformNumber } from "persian-number-input";
-
-const number = 123456.789;
-const formatted = transformNumber(number, {
-  separatorCount: 3,
-  separatorChar: ",",
-  locale: "fa",
-  maxDecimals: 2,
-  showZero: true,
-});
-
-console.log(formatted); // Output: ۱۲۳,۴۵۶٫۷۹
-```
-
-**Explanation**:
-- Use `transformNumber` to format numbers for display in tables, labels, or other non-input contexts.
-- Supports the same options as `PersianNumberInput` (`separatorCount`, `locale`, etc.).
-- Returns a string with localized digits and formatting.
-
-### 📚 Props Reference
-
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| `initialValue` | `string | number` | `""` | Initial value of the input |
-| `separatorCount` | `number` | `3` | Number of digits per group (e.g., 3 for thousands) |
-| `separatorChar` | `string` | `","` | Character used for grouping digits (e.g., `,` or `.`) |
-| `locale` | `string` | `"fa"` | Language for digit localization (e.g., `fa`, `en`) |
-| `maxDecimals` | `number` | `0` | Maximum number of decimal places allowed |
-| `showZero` | `boolean` | `false` | If `true`, displays `0` when the input is empty or zero |
-| `min` | `number` | - | Minimum allowed value (supports decimals, e.g., `0.5`) |
-| `max` | `number` | - | Maximum allowed value (supports decimals, e.g., `1000.201`) |
-| `onValueChange` | `(value: string | undefined) => void` | - | Callback for value changes |
-| `...rest` | `InputHTMLAttributes` | - | Standard HTML input attributes (e.g., `className`, `placeholder`, `style`) |
-
-### 🌟 Why Use Persian Number Input?
-
-- **Multilingual Support**: Seamlessly handle Persian, English, or other localized digits.
-- **Customizable Formatting**: Control separators, decimals, and zero display.
-- **Robust Validation**: Enforce min/max constraints with decimal precision using ``.
-- **Developer-Friendly**: TypeScript support and a simple API for quick integration.
-- **Lightweight**: Optimized for performance with minimal dependencies.
-
-### ❓ FAQ (Frequently Asked Questions)
-
-**Does this package support React 19?**  
-Yes, it is fully compatible with React 16 through 19.
-
-**Can I use decimal numbers?**  
-Yes, set `maxDecimals` to the desired number of decimal places (e.g., `maxDecimals={2}`).
-
-**How do I enforce minimum and maximum values?**  
-Use the `min` and `max` props, which support decimals (e.g., `min={0.5}`, `max={1000.201}`).
-
-**How can I style the input?**  
-Pass `className` or `style` props to customize the input’s appearance.
-
-**What happens if the user enters an invalid number?**  
-The component sanitizes inputs, ensuring only valid numbers are processed, and respects min/max constraints.
-
-### 🌟 Support the Project
-
-If you find this package useful, **please give it a star ⭐ on GitHub** to support further development.
-
-👉 **[GitHub Repository](https://github.com/javadSharifi/persian-number-input)**
-
-Thank you for your support! ❤️🚀
-
-### 📈 SEO Keywords
-
-`Persian Number Input`, `React Persian input`, `React number formatting`, `localized numeric input`, `Persian digits`, `React numeric input`, `number formatter`, `TypeScript React component`, `multilingual input`, `React number formatting hook`, `Persian number utility`
-
-### 📄 License
-
-MIT License
-
-© 2025 Javad Sharifi. All rights reserved.
 
 ---
 
-## فارسی
+## 🛠️ API Reference
 
-**کامپوننت ورودی اعداد فارسی** - یک کامپوننت و ابزار قدرتمند React برای مدیریت و فرمت‌بندی اعداد به صورت فارسی، انگلیسی یا سایر سیستم‌های ارقام محلی. ایده‌آل برای برنامه‌های چندزبانه که نیاز به ورودی‌های عددی با فرمت سفارشی و پشتیبانی از اعشار دارند.
+### PersianNumberInput Props
 
-✅ **امکانات کلیدی:**
+| Prop             | Type                                   | Default     | Description                                              |
+| ---------------- | -------------------------------------- | ----------- | -------------------------------------------------------- |
+| `initialValue`   | `number \| string`                     | `undefined` | Initial value of the input                               |
+| `locale`         | `"fa" \| "ar" \| "en"`                 | `"fa"`      | Locale for digit conversion                              |
+| `separatorCount` | `number`                               | `3`         | Number of digits between separators                      |
+| `separatorChar`  | `string`                               | `","`       | Character used for thousand separator                    |
+| `decimalChar`    | `string`                               | Auto        | Decimal separator character                              |
+| `suffix`         | `string`                               | `undefined` | Suffix text (e.g., currency symbol)                      |
+| `maxDecimals`    | `number`                               | `undefined` | Maximum decimal places allowed                           |
+| `min`            | `number`                               | `undefined` | Minimum allowed value                                    |
+| `max`            | `number`                               | `undefined` | Maximum allowed value                                    |
+| `showZero`       | `boolean`                              | `false`     | Show zero when value is empty                            |
+| `onValueChange`  | `(value: string \| undefined) => void` | `undefined` | Callback when value changes (returns raw English digits) |
 
-- پشتیبانی از ارقام فارسی، انگلیسی و سایر زبان‌ها (مانند هندی)
-- قابلیت تنظیم جداکننده ارقام (مثل هزارگان)
+All standard HTML input props are also supported.
 
-- اعمال محدودیت‌های حداقل و حداکثر با پشتیبانی از اعشار
-- تبدیل خودکار ارقام محلی به ارقام انگلیسی برای پردازش
-- سبک و سازگار با React 16 تا 19
-- پشتیبانی از TypeScript برای توسعه امن
+---
 
-### 🚀 نصب
+### Utility Functions
 
-پکیج را از طریق npm یا yarn نصب کنید:
+#### `transformNumber(rawValue, options)`
 
-```bash
-npm install persian-number-input 
-```
+Formats a number string according to locale and options.
 
-### 💻 مثال‌های استفاده
-
-#### ۱. استفاده از کامپوننت `PersianNumberInput`
-
-این کامپوننت برای ورودی‌های فرم با فرمت‌بندی محلی مناسب است.
-
-```jsx
-import React, { useState } from "react";
-import { PersianNumberInput } from "persian-number-input";
-
-const App = () => {
-  const [number, setNumber] = useState("");
-
-  return (
-    <PersianNumberInput
-      initialValue="123456.78"
-      separatorCount={3}
-      separatorChar=","
-      locale="fa"
-      maxDecimals={2}
-      min={0.5}
-      max={1000000.999}
-      showZero={true}
-      onValueChange={(val) => setNumber(val || "")}
-      placeholder="یک عدد وارد کنید"
-      className="numeric-input"
-    />
-  );
-};
-
-export default App;
-```
-
-**خروجی**:
-```
-ورودی: 123456.78
-خروجی نمایشی: ۱۲۳,۴۵۶٫۷۸
-خروجی انگلیسی: 123456.78
-```
-
-#### ۲. استفاده از هوک `usePersianNumberInput`
-
-هوک `usePersianNumberInput` برای کنترل دقیق ورودی‌های سفارشی استفاده می‌شود.
-
-```jsx
-import React from "react";
-import { usePersianNumberInput } from "persian-number-input";
-
-const CustomInput = () => {
-  const { value, onChange, rawValue } = usePersianNumberInput({
-    initialValue: "5000.25",
-    separatorCount: 3,
-    separatorChar: ",",
-    locale: "fa",
-    maxDecimals: 2,
-    min: 0.5,
-    max: 10000.999,
-    showZero: true,
-  });
-
-  return (
-    <div>
-      <input
-        type="text"
-        inputMode="decimal"
-        value={value}
-        onChange={onChange}
-        placeholder="یک عدد وارد کنید"
-      />
-      <p>مقدار خام: {rawValue || "بدون مقدار"}</p>
-    </div>
-  );
-};
-
-export default CustomInput;
-```
-
-**توضیح**:
-- این هوک وضعیت ورودی و فرمت‌بندی را مدیریت می‌کند و `value` (برای نمایش) و `rawValue` (ارقام انگلیسی) را برمی‌گرداند.
-- برای کامپوننت‌های ورودی سفارشی یا فرم‌های غیراستاندارد مناسب است.
-- **خروجی**:
-  ```
-  ورودی نمایشی: ۵,۰۰۰٫۲۵
-  مقدار خام: 5000.25
-  ```
-
-#### ۳. استفاده از ابزار `transformNumber`
-
-تابع `transformNumber` برای فرمت‌بندی اعداد بدون نیاز به کامپوننت React مناسب است.
-
-```javascript
+```tsx
 import { transformNumber } from "persian-number-input";
 
-const number = 123456.789;
-const formatted = transformNumber(number, {
+const formatted = transformNumber("1234567.89", {
+  locale: "fa",
   separatorCount: 3,
   separatorChar: ",",
-  locale: "fa",
   maxDecimals: 2,
-  showZero: true,
+  suffix: "تومان",
 });
 
-console.log(formatted); // خروجی: ۱۲۳,۴۵۶٫۷۹
+console.log(formatted); // "۱,۲۳۴,۵۶۷٫۸۹ تومان"
 ```
 
-**توضیح**:
-- از `transformNumber` برای فرمت‌بندی اعداد در جداول، برچسب‌ها یا سایر موارد غیرورودی استفاده کنید.
-- همان گزینه‌های `PersianNumberInput` (مانند `separatorCount` و `locale`) را پشتیبانی می‌کند.
-- یک رشته با ارقام محلی و فرمت‌بندی مناسب برمی‌گرداند.
+#### `toEnglishDigits(str, decimalChar?)`
 
-### 📚 مرجع مشخصات (Props)
+Converts Persian/Arabic digits to English digits.
 
-| نام | نوع | پیش‌فرض | توضیح |
-| --- | --- | --- | --- |
-| `initialValue` | `string | number` | `""` | مقدار اولیه ورودی |
-| `separatorCount` | `number` | `3` | تعداد ارقام در هر گروه (مثلاً ۳ برای هزارگان) |
-| `separatorChar` | `string` | `","` | کاراکتر جداکننده گروه‌ها (مثلاً `,` یا `.`) |
-| `locale` | `string` | `"fa"` | زبان برای محلی‌سازی ارقام (مثلاً `fa` یا `en`) |
-| `maxDecimals` | `number` | `0` | حداکثر تعداد ارقام اعشاری مجاز |
-| `showZero` | `boolean` | `false` | اگر `true` باشد، عدد `0` را در ورودی خالی یا صفر نمایش می‌دهد |
-| `min` | `number` | - | حداقل مقدار مجاز (پشتیبانی از اعشار، مثلاً `0.5`) |
-| `max` | `number` | - | حداکثر مقدار مجاز (پشتیبانی از اعشار، مثلاً `1000.201`) |
-| `onValueChange` | `(value: string | undefined) => void` | - | فراخوانی در تغییر مقدار |
-| `...rest` | `InputHTMLAttributes` | - | ویژگی‌های استاندارد ورودی HTML (مثل `className`، `placeholder`، `style`) |
+```tsx
+import { toEnglishDigits } from "persian-number-input";
 
-### 🌟 چرا از این کامپوننت استفاده کنیم؟
+console.log(toEnglishDigits("۱۲۳۴")); // "1234"
+console.log(toEnglishDigits("٩٨٧٦")); // "9876"
+```
 
-- **پشتیبانی چندزبانه**: مدیریت آسان ارقام فارسی، انگلیسی یا سایر زبان‌ها.
-- **فرمت‌بندی انعطاف‌پذیر**: کنترل جداکننده‌ها، اعشار و نمایش صفر.
-- **اعتبارسنجی قوی**: اعمال محدودیت‌های حداقل و حداکثر با دقت اعشاری با ``.
-- **مناسب توسعه‌دهندگان**: پشتیبانی از TypeScript و API ساده برای ادغام سریع.
-- **سبک و سریع**: بهینه‌شده برای عملکرد با حداقل وابستگی‌ها.
+#### `toLocalizedDigits(numStr, locale)`
 
-### ❓ سوالات متداول
+Converts English digits to localized digits.
 
-**آیا این پکیج از React 19 پشتیبانی می‌کند؟**  
-بله، کاملاً با React 16 تا 19 سازگار است.
+```tsx
+import { toLocalizedDigits } from "persian-number-input";
 
-**آیا می‌توان از اعداد اعشاری استفاده کرد؟**  
-بله، با تنظیم `maxDecimals` می‌توانید تعداد ارقام اعشاری را مشخص کنید (مثلاً `maxDecimals={2}`).
+console.log(toLocalizedDigits("1234", "fa")); // "۱۲۳۴"
+console.log(toLocalizedDigits("5678", "ar")); // "٥٦٧٨"
+```
 
-**چگونه می‌توان حداقل و حداکثر مقدار را اعمال کرد؟**  
-از پراپ‌های `min` و `max` استفاده کنید که از اعشار پشتیبانی می‌کنند (مثلاً `min={0.5}` و `max={1000.201}`).
+#### `sanitizeNumericInput(value, maxDecimals?, decimalChar?)`
 
-**چگونه ظاهر ورودی را سفارشی کنم؟**  
-با پراپ‌های `className` یا `style` می‌توانید ظاهر ورودی را تغییر دهید.
+Cleans and validates numeric input.
 
-**اگر کاربر عدد نامعتبری وارد کند چه می‌شود؟**  
-کامپوننت ورودی‌ها را پاکسازی می‌کند و فقط اعداد معتبر را پردازش می‌کند، ضمن رعایت محدودیت‌های min/max.
+```tsx
+import { sanitizeNumericInput } from "persian-number-input";
 
-### 🌟 حمایت از پروژه
+console.log(sanitizeNumericInput("۱۲۳abc۴۵۶", 2)); // "123456"
+console.log(sanitizeNumericInput("12.345.67", 2)); // "12.34"
+```
 
-اگر این پکیج برای شما مفید بود، **لطفاً یک ستاره ⭐ به مخزن GitHub بدهید** تا توسعه بیشتر آن را تشویق کنید.
+---
 
-👉 **[مخزن GitHub](https://github.com/javadSharifi/persian-number-input)**
+## 🎨 Styling
 
-از حمایت شما سپاسگزاریم! ❤️🚀
+The component accepts all standard input props, including `className` and `style`:
 
-### 📈 کلمات کلیدی برای جستجو
+```tsx
+<PersianNumberInput
+  initialValue={1000}
+  locale="fa"
+  className="custom-input"
+  style={{
+    padding: "12px",
+    fontSize: "16px",
+    border: "2px solid #4F46E5",
+    borderRadius: "8px",
+    textAlign: "right",
+  }}
+/>
+```
 
-`ورودی اعداد فارسی`, `کامپوننت React فارسی`, `فرمت‌بندی اعداد در React`, `ورودی عددی محلی‌سازی‌شده`, `ارقام فارسی`, `ورودی عددی React`, `فرمت‌کننده اعداد`, `کامپوننت TypeScript React`, `ورودی چندزبانه`, `هوک فرمت‌بندی اعداد`, `ابزار اعداد فارسی`
+### With Tailwind CSS
 
-### 📄 مجوز
+```tsx
+<PersianNumberInput
+  initialValue={1000}
+  locale="fa"
+  className="w-full px-4 py-3 text-lg border-2 border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 text-right"
+/>
+```
 
-MIT License
+---
+
+## 🌟 Advanced Examples
+
+### Financial Calculator
+
+```tsx
+import { useState } from "react";
+import { PersianNumberInput } from "persian-number-input";
+
+function LoanCalculator() {
+  const [principal, setPrincipal] = useState<string>();
+  const [rate, setRate] = useState<string>();
+  const [years, setYears] = useState<string>();
+
+  const calculateMonthlyPayment = () => {
+    if (!principal || !rate || !years) return 0;
+    const p = parseFloat(principal);
+    const r = parseFloat(rate) / 100 / 12;
+    const n = parseFloat(years) * 12;
+    return (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label>مبلغ وام:</label>
+        <PersianNumberInput
+          locale="fa"
+          suffix="تومان"
+          onValueChange={setPrincipal}
+          min={0}
+        />
+      </div>
+      <div>
+        <label>نرخ سود (٪):</label>
+        <PersianNumberInput
+          locale="fa"
+          maxDecimals={2}
+          onValueChange={setRate}
+          min={0}
+          max={100}
+        />
+      </div>
+      <div>
+        <label>مدت زمان (سال):</label>
+        <PersianNumberInput
+          locale="fa"
+          onValueChange={setYears}
+          min={1}
+          max={30}
+        />
+      </div>
+      <p>
+        پرداخت ماهیانه: {calculateMonthlyPayment().toLocaleString("fa-IR")}{" "}
+        تومان
+      </p>
+    </div>
+  );
+}
+```
+
+---
+
+### Form Integration
+
+```tsx
+import { useForm, Controller } from "react-hook-form";
+import { PersianNumberInput } from "persian-number-input";
+
+function ProductForm() {
+  const { control, handleSubmit } = useForm();
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Controller
+        name="price"
+        control={control}
+        rules={{ required: true }}
+        render={({ field }) => (
+          <PersianNumberInput
+            locale="fa"
+            suffix="تومان"
+            onValueChange={field.onChange}
+            initialValue={field.value}
+          />
+        )}
+      />
+      <button type="submit">ثبت</button>
+    </form>
+  );
+}
+```
+
+---
+
+## 🔍 Why Persian Number Input?
+
+### The Problem
+
+Working with Persian and Arabic numerals in web applications is challenging:
+
+- Users type in their native digits, but forms expect English digits
+- Number formatting varies across locales
+- Maintaining cursor position during formatting is complex
+- Decimal precision handling requires careful implementation
+
+### The Solution
+
+Persian Number Input handles all these complexities automatically:
+
+```tsx
+// User types: ۱۲۳۴۵۶۷
+// Component displays: ۱,۲۳۴,۵۶۷
+// Form receives: "1234567"
+```
+
+---
+
+## 🏆 Comparison
+
+| Feature               | Persian Number Input | Native Input | Other Libraries |
+| --------------------- | -------------------- | ------------ | --------------- |
+| Auto digit conversion | ✅                   | ❌           | ⚠️ Partial      |
+| Cursor preservation   | ✅                   | ❌           | ⚠️ Buggy        |
+| TypeScript support    | ✅                   | ✅           | ⚠️ Varies       |
+| Multi-locale          | ✅                   | ❌           | ❌              |
+| Bundle size           | 🟢 Small             | 🟢 N/A       | 🔴 Large        |
+| Decimal precision     | ✅                   | ❌           | ⚠️ Limited      |
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+MIT © [Your Name]
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with TypeScript and React
+- Uses [decimal.js](https://github.com/MikeMcl/decimal.js/) for precise decimal calculations
+- Inspired by the needs of Persian and Arabic speaking developers
+
+---
+
+## 📞 Support
+
+- 📧 Email: your.email@example.com
+- 🐛 [Issue Tracker](https://github.com/javadSharifi/persian-number-input/issues)
+- 💬 [Discussions](https://github.com/javadSharifi/persian-number-input/discussions)
+
+---
+
+**Made with ❤️ for the Persian and Arabic developer community**
