@@ -19,7 +19,9 @@ node_modules
 
 # production
 /build
-
+/dist
+/dist/
+dist
 # misc
 .DS_Store
 *.pem
