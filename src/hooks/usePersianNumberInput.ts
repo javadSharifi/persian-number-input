@@ -24,6 +24,7 @@ export const usePersianNumberInput = (
     separatorCount = 3,
     separatorChar = ",",
     decimalChar,
+    suffix,
     locale = "fa",
     showZero = false,
     onValueChange,
@@ -74,6 +75,7 @@ export const usePersianNumberInput = (
       separatorCount,
       separatorChar,
       decimalChar,
+      suffix,
       locale,
       showZero,
     });
@@ -81,6 +83,7 @@ export const usePersianNumberInput = (
       separatorCount,
       separatorChar,
       decimalChar,
+      suffix,
       locale,
       showZero,
     });
@@ -113,6 +116,7 @@ export const usePersianNumberInput = (
     separatorCount,
     separatorChar,
     decimalChar,
+    suffix,
     locale,
     showZero,
     maxDecimals,

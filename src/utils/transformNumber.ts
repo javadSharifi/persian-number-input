@@ -8,6 +8,7 @@ export interface TransformNumberOptions {
   separatorCount?: number;
   separatorChar?: string;
   decimalChar?: string;
+  suffix?: string;
   locale?: "fa" | "en" | "ar" | string;
   maxDecimals?: number;
   showZero?: boolean;
@@ -21,12 +22,15 @@ export const transformNumber = (
     separatorCount = 3,
     separatorChar = ",",
     decimalChar,
+    suffix,
     locale = "fa",
     showZero = false,
   } = options || {};
 
   if (rawValue === null || rawValue === undefined || rawValue === "") {
-    return showZero ? toLocalizedDigits("0", locale) : "";
+    const zeroVal = showZero ? toLocalizedDigits("0", locale) : "";
+    if (zeroVal && suffix) return `${zeroVal} ${suffix}`;
+    return zeroVal;
   }
 
   let [integerPart, fractionalPart] = rawValue.split(".");
@@ -36,7 +40,9 @@ export const transformNumber = (
     integerPart || (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
 
   if (absIntPart === "" && !hasTrailingDot && fractionalPart === undefined) {
-    return showZero ? toLocalizedDigits("0", locale) : "";
+    const zeroVal = showZero ? toLocalizedDigits("0", locale) : "";
+    if (zeroVal && suffix) return `${zeroVal} ${suffix}`;
+    return zeroVal;
   }
 
   const groupedInt = groupDigits(absIntPart, separatorCount, separatorChar);
@@ -54,6 +60,10 @@ export const transformNumber = (
 
   if (locale !== "en") {
     finalStr = toLocalizedDigits(finalStr, locale);
+  }
+
+  if (suffix) {
+    finalStr = `${finalStr} ${suffix}`;
   }
 
   return finalStr;
