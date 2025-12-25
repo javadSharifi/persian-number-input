@@ -437,7 +437,7 @@ function ProductForm() {
 
 ## 📄 مجوز
 
-MIT © [نام شما]
+MIT © javad Sharifi
 
 ---
 
@@ -451,7 +451,7 @@ MIT © [نام شما]
 
 ## 📞 پشتیبانی
 
-- 📧 ایمیل: your.email@example.com
+- 📧 telegram: [Javad Sharifi](https://t.me/Javad_sharifi98)
 - 🐛 [گزارش مشکلات](https://github.com/javadSharifi/persian-number-input/issues)
 - 💬 [بحث و گفتگو](https://github.com/javadSharifi/persian-number-input/discussions)
 

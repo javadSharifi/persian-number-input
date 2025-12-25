@@ -9,6 +9,7 @@ A lightweight, powerful React library for handling Persian (Farsi) and Arabic nu
 [![license](https://img.shields.io/npm/l/persian-number-input.svg)](https://github.com/javadSharifi/persian-number-input/blob/main/LICENSE)
 
 ## 🚀 [Live Demo](https://persian-number-input.netlify.app/)
+
 ---
 
 Experience the component in action with our interactive demo!
@@ -22,7 +23,6 @@ persian-number-input: ~1KB (minified + gzipped)
 ```
 
 ![Bundle Size Comparison](./public/size.png)
-
 
 ---
 
@@ -438,7 +438,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-MIT © [Your Name]
+MIT © javad Sharifi
 
 ---
 
@@ -452,7 +452,7 @@ MIT © [Your Name]
 
 ## 📞 Support
 
-- 📧 Email: your.email@example.com
+- 📧 telegram: [Javad Sharifi](https://t.me/Javad_sharifi98)
 - 🐛 [Issue Tracker](https://github.com/javadSharifi/persian-number-input/issues)
 - 💬 [Discussions](https://github.com/javadSharifi/persian-number-input/discussions)
 
