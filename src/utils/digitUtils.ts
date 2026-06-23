@@ -74,6 +74,32 @@ export const groupDigits = (
   return numStr.replace(regex, separatorChar);
 };
 
+export const stripNonNumeric = (str: string): string =>
+  str.replace(/[^0-9.]/g, "");
+
+export const normalizeDecimals = (str: string): string => {
+  const firstDot = str.indexOf(".");
+  if (firstDot !== -1) {
+    const secondDot = str.indexOf(".", firstDot + 1);
+    if (secondDot !== -1) str = str.slice(0, secondDot);
+  }
+  return str;
+};
+
+export const stripLeadingZeros = (str: string): string =>
+  str.replace(/^(-?)0+(?!$|\.)/, "$1");
+
+export const applyDecimalPrecision = (
+  str: string,
+  maxDecimals?: number
+): string => {
+  if (!str.includes(".") || maxDecimals === undefined) return str;
+  const [intPart, fracPart] = str.split(".");
+  const truncatedFrac =
+    maxDecimals > 0 ? fracPart.slice(0, maxDecimals) : "";
+  return truncatedFrac ? `${intPart}.${truncatedFrac}` : intPart;
+};
+
 export const sanitizeNumericInput = (
   value: string | number | null | undefined,
   maxDecimals?: number,
@@ -83,32 +109,25 @@ export const sanitizeNumericInput = (
   let str = toEnglishDigits(String(value), decimalChar);
 
   const isNegative = str.startsWith("-");
-  str = str.replace(/[^0-9.]/g, "");
-
-  const firstDot = str.indexOf(".");
-  if (firstDot !== -1) {
-    const secondDot = str.indexOf(".", firstDot + 1);
-    if (secondDot !== -1) {
-      str = str.slice(0, secondDot);
-    }
-  }
+  str = stripNonNumeric(str);
+  str = normalizeDecimals(str);
 
   if (isNegative && str) {
     str = "-" + str;
   }
 
-  str = str.replace(/^(-?)0+(?!$|\.)/, "$1");
+  str = stripLeadingZeros(str);
 
-  if (str.includes(".")) {
-    const [intPart, fracPart] = str.split(".");
-    if (maxDecimals !== undefined) {
-      const truncatedFrac =
-        maxDecimals > 0 ? fracPart.slice(0, maxDecimals) : "";
-      str = truncatedFrac ? `${intPart}.${truncatedFrac}` : intPart;
-      if (maxDecimals > 0 && String(value).endsWith(decimalChar || ".")) {
-        str = str.includes(".") ? str : `${str}.`;
-      }
-    }
+  if (str.includes(".") && maxDecimals !== undefined) {
+    str = applyDecimalPrecision(str, maxDecimals);
+  }
+
+  if (
+    maxDecimals !== undefined &&
+    maxDecimals > 0 &&
+    String(value).endsWith(decimalChar || ".")
+  ) {
+    str = str.includes(".") ? str : `${str}.`;
   }
 
   return str;
