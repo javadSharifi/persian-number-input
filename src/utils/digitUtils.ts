@@ -64,13 +64,20 @@ export const localizeDecimalSeparator = (
   return numStr.replace(".", separator);
 };
 
+const groupDigitsRegexCache = new Map<string, RegExp>();
+
 export const groupDigits = (
   numStr: string,
   separatorCount: number,
   separatorChar = ","
 ): string => {
   if (!numStr || separatorCount <= 0) return numStr;
-  const regex = new RegExp(`\\B(?=(\\d{${separatorCount}})+(?!\\d))`, "g");
+  const cacheKey = `${separatorCount}:${separatorChar}`;
+  let regex = groupDigitsRegexCache.get(cacheKey);
+  if (!regex) {
+    regex = new RegExp(`\\B(?=(\\d{${separatorCount}})+(?!\\d))`, "g");
+    groupDigitsRegexCache.set(cacheKey, regex);
+  }
   return numStr.replace(regex, separatorChar);
 };
 

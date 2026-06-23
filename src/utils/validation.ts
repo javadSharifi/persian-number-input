@@ -21,12 +21,55 @@ export interface ValidationRule {
   ) => ValidationResult;
 }
 
-export const createMaxRule = (max?: number): ValidationRule => ({
-  timing: ValidationTiming.OnChange,
+function compareNumericStrings(a: string, b: string): number {
+  const aNeg = a.startsWith("-");
+  const bNeg = b.startsWith("-");
+
+  if (aNeg && !bNeg) return -1;
+  if (!aNeg && bNeg) return 1;
+
+  const absA = aNeg ? a.slice(1) : a;
+  const absB = bNeg ? b.slice(1) : b;
+
+  const [aInt = "0", aFrac = ""] = absA.split(".");
+  const [bInt = "0", bFrac = ""] = absB.split(".");
+
+  if (aInt.length !== bInt.length) {
+    const cmp = aInt.length < bInt.length ? -1 : 1;
+    return aNeg ? -cmp : cmp;
+  }
+
+  for (let i = 0; i < aInt.length; i++) {
+    if (aInt[i] < bInt[i]) return aNeg ? 1 : -1;
+    if (aInt[i] > bInt[i]) return aNeg ? -1 : 1;
+  }
+
+  const maxFracLen = Math.max(aFrac.length, bFrac.length);
+  const paddedA = aFrac.padEnd(maxFracLen, "0");
+  const paddedB = bFrac.padEnd(maxFracLen, "0");
+
+  for (let i = 0; i < maxFracLen; i++) {
+    if (paddedA[i] < paddedB[i]) return aNeg ? 1 : -1;
+    if (paddedA[i] > paddedB[i]) return aNeg ? -1 : 1;
+  }
+
+  return 0;
+}
+
+export const createMaxRule = (
+  max?: number,
+  timing: ValidationTiming = ValidationTiming.OnChange
+): ValidationRule => ({
+  timing,
   validate: (rawValue: string) => {
-    if (rawValue === "" || rawValue === ".") return { valid: true };
-    const num = parseFloat(rawValue);
-    if (max !== undefined && !isNaN(num) && num > max) {
+    if (rawValue === "" || rawValue === "." || max === undefined) {
+      return { valid: true };
+    }
+    const maxStr = String(max);
+    if (compareNumericStrings(rawValue, maxStr) > 0) {
+      if (timing === ValidationTiming.OnBlur) {
+        return { valid: false, correctedValue: maxStr };
+      }
       return { valid: false };
     }
     return { valid: true };
@@ -36,11 +79,12 @@ export const createMaxRule = (max?: number): ValidationRule => ({
 export const createMinRule = (min?: number): ValidationRule => ({
   timing: ValidationTiming.OnBlur,
   validate: (rawValue: string) => {
-    if (rawValue && rawValue !== ".") {
-      const num = parseFloat(rawValue);
-      if (min !== undefined && !isNaN(num) && num < min) {
-        return { valid: false, correctedValue: String(min) };
-      }
+    if (!rawValue || rawValue === "." || min === undefined) {
+      return { valid: true };
+    }
+    const minStr = String(min);
+    if (compareNumericStrings(rawValue, minStr) < 0) {
+      return { valid: false, correctedValue: minStr };
     }
     return { valid: true };
   },

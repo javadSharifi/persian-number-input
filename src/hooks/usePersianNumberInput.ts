@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   transformNumber,
   TransformNumberOptions,
@@ -10,14 +10,17 @@ import { useNumberFormatter } from "./useNumberFormatter";
 import { useNumberValidation } from "./useNumberValidation";
 import { useNumericInputEvents } from "./useNumericInputEvents";
 
-interface UsePersianNumberInputProps
+export interface UsePersianNumberInputProps
   extends Omit<TransformNumberOptions, "maxDecimals"> {
   initialValue?: number | string;
   onValueChange?: (value: string | undefined) => void;
   min?: number;
   max?: number;
   maxDecimals?: number;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  onPaste?: React.ClipboardEventHandler<HTMLInputElement>;
 }
 
 export const usePersianNumberInput = (
@@ -35,12 +38,22 @@ export const usePersianNumberInput = (
     min,
     max,
     maxDecimals,
+    onChange: externalOnChange,
     onBlur: externalOnBlur,
+    onKeyDown: externalOnKeyDown,
+    onPaste: externalOnPaste,
   } = props;
 
   const [rawValue, setRawValue] = useState<string | undefined>(() =>
     sanitizeNumericInput(initialValue, maxDecimals, decimalChar)
   );
+
+  const [isInvalid, setIsInvalid] = useState(false);
+
+  useEffect(() => {
+    setRawValue(sanitizeNumericInput(initialValue, maxDecimals, decimalChar));
+    setIsInvalid(false);
+  }, [initialValue, maxDecimals, decimalChar]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const rawValueLen = rawValue ? rawValue.length : 0;
@@ -63,9 +76,12 @@ export const usePersianNumberInput = (
 
   const updateValue = useCallback(
     (nextRaw: string) => {
-      if (!validateOnChange(nextRaw)) return;
+      const valid = validateOnChange(nextRaw);
+      setIsInvalid(!valid);
       setRawValue(nextRaw);
-      onValueChange?.(nextRaw);
+      if (valid) {
+        onValueChange?.(nextRaw);
+      }
     },
     [validateOnChange, onValueChange]
   );
@@ -79,6 +95,8 @@ export const usePersianNumberInput = (
     maxDecimals,
     decimalChar,
     updateValue,
+    onKeyDown: externalOnKeyDown,
+    onPaste: externalOnPaste,
   });
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +105,8 @@ export const usePersianNumberInput = (
     const sanitized = sanitizeNumericInput(value, maxDecimals, decimalChar);
 
     if (sanitized !== rawValue) {
-      if (!validateOnChange(sanitized)) return;
+      const valid = validateOnChange(sanitized);
+      setIsInvalid(!valid);
 
       const prevFormatted = transformNumber(rawValue, transformOpts);
       const nextFormatted = transformNumber(sanitized, transformOpts);
@@ -97,8 +116,12 @@ export const usePersianNumberInput = (
       setCursor(cursor + diff);
 
       setRawValue(sanitized);
-      onValueChange?.(sanitized);
+      if (valid) {
+        onValueChange?.(sanitized);
+      }
     }
+
+    externalOnChange?.(event);
   };
 
   const onBlur = useCallback(
@@ -108,6 +131,7 @@ export const usePersianNumberInput = (
         setRawValue(result.correctedValue);
         onValueChange?.(result.correctedValue);
       }
+      setIsInvalid(false);
       externalOnBlur?.(event);
     },
     [rawValue, validateOnBlur, onValueChange, externalOnBlur]
@@ -122,5 +146,6 @@ export const usePersianNumberInput = (
     rawValue,
     inputRef,
     setRawValue: updateValue,
+    isInvalid,
   };
 };

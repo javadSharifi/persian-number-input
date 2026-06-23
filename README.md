@@ -39,7 +39,7 @@ Form receives: "1234567"
 - 🌍 **Multi-locale** — `fa` (Farsi/Persian), `ar` (Arabic), `en` (English)
 - 📊 **Thousand separator formatting** — customizable separator character and group size
 - 💰 **Currency-ready** — add prefix, suffix (e.g. تومان, ریال, ر.س), and custom decimal separator
-- ⚡ **~1KB gzipped** — zero extra dependencies beyond `decimal.js` for precision
+- ⚡ **~1KB gzipped** — zero extra dependencies, pure TypeScript
 - 🎯 **TypeScript** — full type definitions included
 - 🔄 **Cursor-position preservation** — no jump on re-format
 - ✅ **Min/max validation** — built-in range enforcement and decimal precision control
@@ -346,7 +346,7 @@ A: The component formats numbers correctly for RTL — for full RTL layout, set 
 A: `fa` uses Persian digits (۰–۹) and the `٫` decimal separator. `ar` uses Eastern Arabic digits (٠–٩). Both return English digits to `onValueChange`.
 
 **Q: Is there a maximum number size?**  
-A: The library uses `decimal.js` internally, so it handles arbitrarily large and precise numbers without floating-point artifacts.
+A: The library uses string-based numeric comparison for validation, so it handles arbitrarily large and precise numbers without floating-point artifacts.
 
 ---
 

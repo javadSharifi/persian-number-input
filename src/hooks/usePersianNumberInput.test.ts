@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { usePersianNumberInput } from "./usePersianNumberInput";
+import { createChangeEvent, createFocusEvent } from "../test-utils";
 
 describe("usePersianNumberInput", () => {
   describe("initial state", () => {
@@ -54,9 +55,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1234" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1234" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -67,9 +66,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12abc34" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12abc34" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -80,9 +77,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲۳۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲۳۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -93,9 +88,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "١٢٣٤" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "١٢٣٤" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -106,9 +99,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12.34" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12.34" }));
       });
 
       expect(result.current.rawValue).toBe("12.34");
@@ -119,9 +110,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12." },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12." }));
       });
 
       expect(result.current.rawValue).toBe("12.");
@@ -137,9 +126,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲۳,۴۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲۳,۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲۳,۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -152,9 +139,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲۴۵۶" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲۴۵۶" }));
       });
 
       expect(result.current.rawValue).toBe("12456");
@@ -167,9 +152,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "" }));
       });
 
       expect(result.current.rawValue).toBe("");
@@ -180,9 +163,7 @@ describe("usePersianNumberInput", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12.34.56" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12.34.56" }));
       });
 
       expect(result.current.rawValue).toBe("12.34");
@@ -197,9 +178,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "500" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "500" }));
       });
 
       expect(result.current.rawValue).toBe("500");
@@ -211,26 +190,23 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1000" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1000" }));
       });
 
       expect(result.current.rawValue).toBe("1000");
     });
 
-    it("blocks value above max", () => {
+    it("allows typing above max but sets isInvalid", () => {
       const { result } = renderHook(() =>
         usePersianNumberInput({ max: 1000 })
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1500" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1500" }));
       });
 
-      expect(result.current.rawValue).toBe("");
+      expect(result.current.rawValue).toBe("1500");
+      expect(result.current.isInvalid).toBe(true);
     });
   });
 
@@ -241,7 +217,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onBlur({} as any);
+        result.current.onBlur(createFocusEvent());
       });
 
       expect(result.current.rawValue).toBe("50");
@@ -253,7 +229,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onBlur({} as any);
+        result.current.onBlur(createFocusEvent());
       });
 
       expect(result.current.rawValue).toBe("10");
@@ -265,7 +241,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onBlur({} as any);
+        result.current.onBlur(createFocusEvent());
       });
 
       expect(result.current.rawValue).toBe("");
@@ -277,10 +253,30 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onBlur({} as any);
+        result.current.onBlur(createFocusEvent());
       });
 
       expect(result.current.rawValue).toBe(".");
+    });
+
+    it("clamps to max on blur and resets isInvalid", () => {
+      const { result } = renderHook(() =>
+        usePersianNumberInput({ max: 100 })
+      );
+
+      act(() => {
+        result.current.onChange(createChangeEvent({ value: "150" }));
+      });
+
+      expect(result.current.rawValue).toBe("150");
+      expect(result.current.isInvalid).toBe(true);
+
+      act(() => {
+        result.current.onBlur(createFocusEvent());
+      });
+
+      expect(result.current.rawValue).toBe("100");
+      expect(result.current.isInvalid).toBe(false);
     });
   });
 
@@ -292,9 +288,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1234" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1234" }));
       });
 
       expect(onValueChange).toHaveBeenCalledWith("1234");
@@ -307,9 +301,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "" }));
       });
 
       expect(onValueChange).toHaveBeenCalledWith("");
@@ -322,10 +314,40 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onBlur({} as any);
+        result.current.onBlur(createFocusEvent());
       });
 
       expect(onValueChange).toHaveBeenCalledWith("10");
+    });
+
+    it("does not call onValueChange for value above max", () => {
+      const onValueChange = vi.fn();
+      const { result } = renderHook(() =>
+        usePersianNumberInput({ max: 100, onValueChange })
+      );
+
+      act(() => {
+        result.current.onChange(createChangeEvent({ value: "150" }));
+      });
+
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it("calls onValueChange when clamped to max on blur", () => {
+      const onValueChange = vi.fn();
+      const { result } = renderHook(() =>
+        usePersianNumberInput({ max: 100, onValueChange })
+      );
+
+      act(() => {
+        result.current.onChange(createChangeEvent({ value: "150" }));
+      });
+
+      act(() => {
+        result.current.onBlur(createFocusEvent());
+      });
+
+      expect(onValueChange).toHaveBeenCalledWith("100");
     });
   });
 
@@ -336,9 +358,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12.3456" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12.3456" }));
       });
 
       expect(result.current.rawValue).toBe("12.34");
@@ -351,9 +371,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12." },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12." }));
       });
 
       expect(result.current.rawValue).toBe("12.");
@@ -367,9 +385,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1234" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1234" }));
       });
 
       expect(result.current.value).toBe("۱,۲۳۴ متر");
@@ -383,9 +399,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1000000" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1000000" }));
       });
 
       expect(result.current.value).toBe("۱/۰۰۰/۰۰۰");
@@ -397,9 +411,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "10000" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "10000" }));
       });
 
       expect(result.current.value).toBe("۱,۰۰,۰۰");
@@ -413,9 +425,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12,34" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12,34" }));
       });
 
       expect(result.current.rawValue).toBe("12.34");
@@ -430,9 +440,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "1234" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "1234" }));
       });
 
       expect(result.current.value).toBe("1,234");
@@ -444,9 +452,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12.34" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12.34" }));
       });
 
       expect(result.current.value).toBe("12.34");
@@ -465,7 +471,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۹,۹۹۹");
     });
 
-    it("respects max validation", () => {
+    it("sets value above max but marks invalid", () => {
       const { result } = renderHook(() =>
         usePersianNumberInput({ max: 1000 })
       );
@@ -474,7 +480,8 @@ describe("usePersianNumberInput", () => {
         result.current.setRawValue("9999");
       });
 
-      expect(result.current.rawValue).toBe("");
+      expect(result.current.rawValue).toBe("9999");
+      expect(result.current.isInvalid).toBe(true);
     });
   });
 
@@ -495,9 +502,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲,۳۴۵");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲,۳۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲,۳۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -512,9 +517,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲۳,۴۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲,۴۵" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲,۴۵" }));
       });
 
       expect(result.current.rawValue).toBe("1245");
@@ -527,9 +530,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۳۴۵۶" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۳۴۵۶" }));
       });
 
       expect(result.current.rawValue).toBe("13456");
@@ -542,9 +543,7 @@ describe("usePersianNumberInput", () => {
       );
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲۳۴۵" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲۳۴۵" }));
       });
 
       expect(result.current.rawValue).toBe("12345");
@@ -561,9 +560,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲۳,۴۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۲۳,۴۵۶" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۲۳,۴۵۶" }));
       });
 
       expect(result.current.rawValue).toBe("23456");
@@ -578,9 +575,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲۳,۴۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱۲,۳۴۵" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱۲,۳۴۵" }));
       });
 
       expect(result.current.rawValue).toBe("12345");
@@ -595,9 +590,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴٫۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳۴۵۶" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳۴۵۶" }));
       });
 
       expect(result.current.rawValue).toBe("123456");
@@ -612,9 +605,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴٫۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳۴٫۵" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳۴٫۵" }));
       });
 
       expect(result.current.rawValue).toBe("1234.5");
@@ -629,9 +620,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴٫۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -646,9 +635,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴٫");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -663,9 +650,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴ متر");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳" }));
       });
 
       expect(result.current.rawValue).toBe("123");
@@ -680,9 +665,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱,۲۳۴,۵۶۷,۸۹۰");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱,۲۳۴" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱,۲۳۴" }));
       });
 
       expect(result.current.rawValue).toBe("1234");
@@ -697,9 +680,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("۱۲۳,۴۵۶");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "۱٢۳,۴۶" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "۱٢۳,۴۶" }));
       });
 
       expect(result.current.rawValue).toBe("12346");
@@ -714,9 +695,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("123,456");
 
       act(() => {
-        result.current.onChange({
-          target: { value: "12,45" },
-        } as any);
+        result.current.onChange(createChangeEvent({ value: "12,45" }));
       });
 
       expect(result.current.rawValue).toBe("1245");

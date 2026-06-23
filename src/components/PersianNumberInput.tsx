@@ -1,11 +1,14 @@
-import React, { forwardRef, useCallback, useMemo } from "react";
-import { usePersianNumberInput } from "../hooks/usePersianNumberInput";
+import React, { forwardRef, useMemo } from "react";
+import {
+  usePersianNumberInput,
+  type UsePersianNumberInputProps,
+} from "../hooks/usePersianNumberInput";
 import type { TransformNumberOptions } from "../utils/transformNumber";
 
 interface PersianNumberInputProps
   extends Omit<
       React.InputHTMLAttributes<HTMLInputElement>,
-      "onChange" | "value" | "min" | "max"
+      "value" | "min" | "max"
     >,
     Omit<TransformNumberOptions, "maxDecimals"> {
   initialValue?: number | string;
@@ -45,58 +48,49 @@ const PersianNumberInput = forwardRef<
     min,
     max,
     maxDecimals,
-    onBlur: propsOnBlur,
-    onKeyDown: propsOnKeyDown,
-    onPaste: propsOnPaste,
+    onChange: externalOnChange,
+    onBlur: externalOnBlur,
+    onKeyDown: externalOnKeyDown,
+    onPaste: externalOnPaste,
     ...rest
   } = props;
 
-  const { value, onChange, onKeyDown, onPaste, onBlur, inputRef } =
-    usePersianNumberInput({
-      initialValue,
-      separatorCount,
-      separatorChar,
-      decimalChar,
-      suffix,
-      locale,
-      showZero,
-      onValueChange,
-      min,
-      max,
-      maxDecimals,
-      onBlur: propsOnBlur,
-    });
+  const hookProps: UsePersianNumberInputProps = {
+    initialValue,
+    separatorCount,
+    separatorChar,
+    decimalChar,
+    suffix,
+    locale,
+    showZero,
+    onValueChange,
+    min,
+    max,
+    maxDecimals,
+    onChange: externalOnChange,
+    onBlur: externalOnBlur,
+    onKeyDown: externalOnKeyDown,
+    onPaste: externalOnPaste,
+  };
+
+  const { value, onChange, onKeyDown, onPaste, onBlur, inputRef, isInvalid } =
+    usePersianNumberInput(hookProps);
 
   const mergedRef = useMemo(() => mergeRefs(ref, inputRef), [ref, inputRef]);
 
-  const composedOnKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      onKeyDown(e);
-      propsOnKeyDown?.(e);
-    },
-    [onKeyDown, propsOnKeyDown]
-  );
-
-  const composedOnPaste = useCallback(
-    (e: React.ClipboardEvent<HTMLInputElement>) => {
-      onPaste(e);
-      propsOnPaste?.(e);
-    },
-    [onPaste, propsOnPaste]
-  );
-
   return (
     <input
-      {...rest}
       ref={mergedRef}
       type="text"
       inputMode="decimal"
       dir="ltr"
       value={value}
       onChange={onChange}
-      onKeyDown={composedOnKeyDown}
-      onPaste={composedOnPaste}
+      onKeyDown={onKeyDown}
+      onPaste={onPaste}
       onBlur={onBlur}
+      aria-invalid={isInvalid || undefined}
+      {...rest}
     />
   );
 });

@@ -9,11 +9,21 @@ interface EventOptions {
   maxDecimals?: number;
   decimalChar?: string;
   updateValue: (value: string) => void;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  onPaste?: React.ClipboardEventHandler<HTMLInputElement>;
 }
 
 export const useNumericInputEvents = (options: EventOptions) => {
-  const { keyFilter, suffix, rawValue, maxDecimals, decimalChar, updateValue } =
-    options;
+  const {
+    keyFilter,
+    suffix,
+    rawValue,
+    maxDecimals,
+    decimalChar,
+    updateValue,
+    onKeyDown: externalOnKeyDown,
+    onPaste: externalOnPaste,
+  } = options;
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -40,8 +50,10 @@ export const useNumericInputEvents = (options: EventOptions) => {
           updateValue(newRaw);
         }
       }
+
+      externalOnKeyDown?.(e);
     },
-    [keyFilter, suffix, rawValue, updateValue]
+    [keyFilter, suffix, rawValue, updateValue, externalOnKeyDown]
   );
 
   const onPaste = useCallback(
@@ -50,8 +62,10 @@ export const useNumericInputEvents = (options: EventOptions) => {
       const pasted = e.clipboardData.getData("text");
       const sanitized = sanitizeNumericInput(pasted, maxDecimals, decimalChar);
       updateValue(sanitized);
+
+      externalOnPaste?.(e);
     },
-    [maxDecimals, decimalChar, updateValue]
+    [maxDecimals, decimalChar, updateValue, externalOnPaste]
   );
 
   return { onKeyDown, onPaste };

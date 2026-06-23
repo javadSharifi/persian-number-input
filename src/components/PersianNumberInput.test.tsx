@@ -166,13 +166,14 @@ describe("PersianNumberInput", () => {
   });
 
   describe("max validation", () => {
-    it("blocks input above max", () => {
+    it("does not block input above max but marks invalid", () => {
       render(<PersianNumberInput max={100} />);
       const input = screen.getByRole("textbox");
 
       fireEvent.change(input, { target: { value: "150" } });
 
-      expect(input).toHaveValue("");
+      expect(input).toHaveValue("۱۵۰");
+      expect(input).toHaveAttribute("aria-invalid", "true");
     });
 
     it("allows input at max", () => {
@@ -191,6 +192,31 @@ describe("PersianNumberInput", () => {
       fireEvent.change(input, { target: { value: "50" } });
 
       expect(input).toHaveValue("۵۰");
+    });
+
+    it("clamps to max on blur when value exceeds max", () => {
+      render(<PersianNumberInput max={100} />);
+      const input = screen.getByRole("textbox");
+
+      fireEvent.change(input, { target: { value: "150" } });
+      expect(input).toHaveAttribute("aria-invalid", "true");
+
+      fireEvent.blur(input);
+
+      expect(input).toHaveValue("۱۰۰");
+      expect(input).not.toHaveAttribute("aria-invalid");
+    });
+
+    it("does not change valid value on blur", () => {
+      render(<PersianNumberInput max={100} />);
+      const input = screen.getByRole("textbox");
+
+      fireEvent.change(input, { target: { value: "50" } });
+
+      fireEvent.blur(input);
+
+      expect(input).toHaveValue("۵۰");
+      expect(input).not.toHaveAttribute("aria-invalid");
     });
   });
 
@@ -358,11 +384,11 @@ describe("PersianNumberInput", () => {
   });
 
   describe("RTL/LTR direction handling", () => {
-    it("forces dir=ltr even when dir=rtl is passed", () => {
+    it("respects developer-provided dir override", () => {
       render(<PersianNumberInput dir="rtl" />);
       const input = screen.getByRole("textbox");
 
-      expect(input).toHaveAttribute("dir", "ltr");
+      expect(input).toHaveAttribute("dir", "rtl");
     });
 
     it("maintains correct input behavior with ltr direction - typing", () => {

@@ -16,7 +16,8 @@ export const useNumberValidation = (options: ValidationOptions) => {
   const engine = useMemo(
     () =>
       createValidationEngine([
-        createMaxRule(options.max),
+        createMaxRule(options.max, ValidationTiming.OnChange),
+        createMaxRule(options.max, ValidationTiming.OnBlur),
         createMinRule(options.min),
       ]),
     [options.max, options.min]
