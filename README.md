@@ -42,7 +42,9 @@ Form receives: "1234567"
 - ⚡ **~1KB gzipped** — zero extra dependencies, pure TypeScript
 - 🎯 **TypeScript** — full type definitions included
 - 🔄 **Cursor-position preservation** — no jump on re-format
-- ✅ **Min/max validation** — built-in range enforcement and decimal precision control
+- 📋 **Smart paste handling** — pasted content is sanitized and auto-converted
+- ✅ **Min/max validation** — soft enforcement with `aria-invalid` and automatic clamp on blur
+
 - ♿ **Accessible** — follows WCAG input best practices
 
 ---
@@ -203,11 +205,14 @@ function CustomInput() {
       value={value}
       onChange={onChange}
       onBlur={onBlur}
+      onPaste={onPaste}
       dir="rtl"
     />
   );
 }
 ```
+
+The hook also returns `isInvalid` (boolean) when the value exceeds `max`, and `onPaste` for paste event handling.
 
 ---
 
@@ -225,11 +230,11 @@ function CustomInput() {
 | `suffix`         | `string`                               | `undefined` | Currency or unit suffix (e.g. `تومان`, `ریال`)      |
 | `maxDecimals`    | `number`                               | `undefined` | Maximum allowed decimal places                       |
 | `min`            | `number`                               | `undefined` | Minimum allowed value                                |
-| `max`            | `number`                               | `undefined` | Maximum allowed value                                |
+| `max`            | `number`                               | `undefined` | Maximum allowed value — soft validation (marks invalid, clamps on blur) |
 | `showZero`       | `boolean`                              | `false`     | Display `0` instead of empty when value is zero      |
 | `onValueChange`  | `(value: string \| undefined) => void` | `undefined` | Fires on change — always returns English digits      |
 
-All standard HTML `<input>` props (e.g. `className`, `style`, `placeholder`, `disabled`) are also supported.
+All standard HTML `<input>` props are also supported, including `onChange`, `onKeyDown`, `onPaste`, `className`, `style`, `placeholder`, `dir`, and `disabled`.
 
 ---
 
@@ -283,6 +288,56 @@ import { sanitizeNumericInput } from "persian-number-input";
 
 sanitizeNumericInput("۱۲۳abc۴۵۶", 2); // "123456"
 sanitizeNumericInput("12.345.67", 2);  // "12.34"
+```
+
+#### `stripNonNumeric(str)`
+
+Remove all non-digit and non-dot characters.
+
+```tsx
+import { stripNonNumeric } from "persian-number-input";
+
+stripNonNumeric("12abc34.56xyz"); // "1234.56"
+```
+
+#### `normalizeDecimals(str)`
+
+Keep only the first decimal point.
+
+```tsx
+import { normalizeDecimals } from "persian-number-input";
+
+normalizeDecimals("12.34.56"); // "12.3456"
+```
+
+#### `stripLeadingZeros(str)`
+
+Strip leading zeros from a numeric string.
+
+```tsx
+import { stripLeadingZeros } from "persian-number-input";
+
+stripLeadingZeros("001234.56"); // "1234.56"
+```
+
+#### `applyDecimalPrecision(str, maxDecimals?)`
+
+Truncate fractional part to the specified decimal places.
+
+```tsx
+import { applyDecimalPrecision } from "persian-number-input";
+
+applyDecimalPrecision("1234.5678", 2); // "1234.56"
+```
+
+#### `roundToDecimals(value, maxDecimals?)`
+
+Alias for `applyDecimalPrecision` — truncate fractional part.
+
+```tsx
+import { roundToDecimals } from "persian-number-input";
+
+roundToDecimals("1234.5678", 2); // "1234.56"
 ```
 
 ---

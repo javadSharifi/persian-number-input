@@ -42,7 +42,8 @@ English | [فارسی](./README.fa.md)
 - ⚡ **فقط ~۱ کیلوبایت** — بدون هیچ dependency اضافه
 - 🎯 **TypeScript** — تعریف تایپ کامل
 - 🔄 **حفظ موقعیت cursor** — بدون جهش هنگام فرمت‌دهی
-- ✅ **اعتبارسنجی min/max** — کنترل بازه مجاز و دقت اعشاری
+- 📋 **مدیریت هوشمند paste** — محتوای چسبانده شده خودکار پالایش و تبدیل می‌شود
+- ✅ **اعتبارسنجی min/max** — اعتبارسنجی نرم با `aria-invalid` و اعمال خودکار محدودیت در blur
 - ♿ **دسترس‌پذیر** — رعایت استانداردهای WCAG
 
 ---
@@ -203,11 +204,14 @@ function CustomInput() {
       value={value}
       onChange={onChange}
       onBlur={onBlur}
+      onPaste={onPaste}
       dir="rtl"
     />
   );
 }
 ```
+
+Hook همچنین `isInvalid` (boolean) رو وقتی مقدار از `max` بیشتر بشه برمی‌گردونه، و `onPaste` برای مدیریت رویداد paste.
 
 ---
 
@@ -266,11 +270,11 @@ function LoanCalculator() {
 | `suffix`         | `string`                               | `undefined` | پسوند — مثل `تومان`، `ریال`                                     |
 | `maxDecimals`    | `number`                               | `undefined` | حداکثر رقم اعشار مجاز                                            |
 | `min`            | `number`                               | `undefined` | کمترین مقدار مجاز                                                |
-| `max`            | `number`                               | `undefined` | بیشترین مقدار مجاز                                               |
+| `max`            | `number`                               | `undefined` | بیشترین مقدار مجاز — اعتبارسنجی نرم (علامت‌گذاری invalid، اعمال در blur) |
 | `showZero`       | `boolean`                              | `false`     | نمایش صفر وقتی ورودی خالی است                                    |
 | `onValueChange`  | `(value: string \| undefined) => void` | `undefined` | callback هنگام تغییر — همیشه ارقام انگلیسی برمی‌گرداند          |
 
-تمام props استاندارد `<input>` مثل `className`، `style`، `placeholder` و `disabled` هم پشتیبانی می‌شن.
+تمام props استاندارد `<input>` مثل `onChange`، `onKeyDown`، `onPaste`، `className`، `style`، `placeholder`، `dir` و `disabled` هم پشتیبانی می‌شن.
 
 ---
 
@@ -324,6 +328,56 @@ import { sanitizeNumericInput } from "persian-number-input";
 
 sanitizeNumericInput("۱۲۳abc۴۵۶", 2); // "123456"
 sanitizeNumericInput("12.345.67", 2);  // "12.34"
+```
+
+#### `stripNonNumeric(str)`
+
+حذف همه کاراکترهای غیرعددی و غیر از نقطه:
+
+```tsx
+import { stripNonNumeric } from "persian-number-input";
+
+stripNonNumeric("12abc34.56xyz"); // "1234.56"
+```
+
+#### `normalizeDecimals(str)`
+
+نگه داشتن فقط اولین نقطه اعشاری:
+
+```tsx
+import { normalizeDecimals } from "persian-number-input";
+
+normalizeDecimals("12.34.56"); // "12.3456"
+```
+
+#### `stripLeadingZeros(str)`
+
+حذف صفرهای اضافه ابتدای عدد:
+
+```tsx
+import { stripLeadingZeros } from "persian-number-input";
+
+stripLeadingZeros("001234.56"); // "1234.56"
+```
+
+#### `applyDecimalPrecision(str, maxDecimals?)`
+
+محدود کردن قسمت اعشار به تعداد رقم مشخص:
+
+```tsx
+import { applyDecimalPrecision } from "persian-number-input";
+
+applyDecimalPrecision("1234.5678", 2); // "1234.56"
+```
+
+#### `roundToDecimals(value, maxDecimals?)`
+
+مشابه `applyDecimalPrecision` — محدود کردن قسمت اعشار:
+
+```tsx
+import { roundToDecimals } from "persian-number-input";
+
+roundToDecimals("1234.5678", 2); // "1234.56"
 ```
 
 ---
