@@ -293,13 +293,13 @@ describe("PersianNumberInput", () => {
   });
 
   describe("edge cases", () => {
-    it("handles negative numbers (stripped by sanitization)", () => {
+    it("handles negative numbers", () => {
       render(<PersianNumberInput />);
       const input = screen.getByRole("textbox");
 
       fireEvent.change(input, { target: { value: "-1234" } });
 
-      expect(input).toHaveValue("۱,۲۳۴");
+      expect(input).toHaveValue("-۱,۲۳۴");
     });
 
     it("handles very large numbers", () => {

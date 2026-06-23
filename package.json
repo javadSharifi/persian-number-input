@@ -1,6 +1,6 @@
 {
   "name": "persian-number-input",
-  "version": "4.3.3",
+  "version": "4.4.0",
   "description": "React component for Persian, Indic, or English localized number input with customizable digit grouping",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -13,7 +13,6 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -49,7 +48,5 @@
     "typescript": "^5.9.3",
     "vitest": "^4.1.6"
   },
-  "dependencies": {
-    "decimal.js": "^10.6.0"
-  }
+  "dependencies": {}
 }

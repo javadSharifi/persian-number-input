@@ -162,7 +162,7 @@ describe("sanitizeNumericInput", () => {
   });
 
   it("removes extra decimal points", () => {
-    expect(sanitizeNumericInput("12.34.56")).toBe("12.3456");
+    expect(sanitizeNumericInput("12.34.56")).toBe("12.34");
   });
 
   it("removes leading zeros", () => {
@@ -202,6 +202,19 @@ describe("sanitizeNumericInput", () => {
 
   it("handles mixed locale input", () => {
     expect(sanitizeNumericInput("۱۲٣۴")).toBe("1234");
+  });
+
+  it("preserves negative sign", () => {
+    expect(sanitizeNumericInput("-1234")).toBe("-1234");
+    expect(sanitizeNumericInput("-12.34")).toBe("-12.34");
+  });
+
+  it("removes leading zeros with negative sign", () => {
+    expect(sanitizeNumericInput("-00123")).toBe("-123");
+  });
+
+  it("ignores second decimal point with negative numbers", () => {
+    expect(sanitizeNumericInput("-12.34.56")).toBe("-12.34");
   });
 });
 

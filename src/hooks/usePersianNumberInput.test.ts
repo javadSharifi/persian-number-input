@@ -176,7 +176,7 @@ describe("usePersianNumberInput", () => {
       expect(result.current.value).toBe("");
     });
 
-    it("handles multiple decimal points (only first kept)", () => {
+    it("handles multiple decimal points (only first kept, second ignored)", () => {
       const { result } = renderHook(() => usePersianNumberInput());
 
       act(() => {
@@ -185,8 +185,8 @@ describe("usePersianNumberInput", () => {
         } as any);
       });
 
-      expect(result.current.rawValue).toBe("12.3456");
-      expect(result.current.value).toBe("۱۲٫۳۴۵۶");
+      expect(result.current.rawValue).toBe("12.34");
+      expect(result.current.value).toBe("۱۲٫۳۴");
     });
   });
 

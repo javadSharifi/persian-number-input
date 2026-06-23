@@ -40,7 +40,7 @@ export const toEnglishDigits = (str: string, decimalChar?: string): string => {
   );
 
   if (decimalChar && decimalChar !== "." && result.includes(decimalChar)) {
-    result = result.split(decimalChar).join(".");
+    result = result.replaceAll(decimalChar, ".");
   }
 
   return result;
@@ -82,14 +82,22 @@ export const sanitizeNumericInput = (
   if (value === null || value === undefined) return "";
   let str = toEnglishDigits(String(value), decimalChar);
 
+  const isNegative = str.startsWith("-");
   str = str.replace(/[^0-9.]/g, "");
 
-  const parts = str.split(".");
-  if (parts.length > 2) {
-    str = parts[0] + "." + parts.slice(1).join("");
+  const firstDot = str.indexOf(".");
+  if (firstDot !== -1) {
+    const secondDot = str.indexOf(".", firstDot + 1);
+    if (secondDot !== -1) {
+      str = str.slice(0, secondDot);
+    }
   }
 
-  str = str.replace(/^0+(?!$|\.)/, "");
+  if (isNegative && str) {
+    str = "-" + str;
+  }
+
+  str = str.replace(/^(-?)0+(?!$|\.)/, "$1");
 
   if (str.includes(".")) {
     const [intPart, fracPart] = str.split(".");

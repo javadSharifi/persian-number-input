@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useRef, useLayoutEffect } from "react";
-import Decimal from "decimal.js";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   transformNumber,
   TransformNumberOptions,
 } from "../utils/transformNumber";
 import { sanitizeNumericInput } from "../utils/digitUtils";
+import { useCursorManager } from "./useCursorManager";
 
 interface UsePersianNumberInputProps
   extends Omit<TransformNumberOptions, "maxDecimals"> {
@@ -39,26 +39,29 @@ export const usePersianNumberInput = (
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const selectionRef = useRef<number | null>(null);
+  const { setCursor } = useCursorManager(inputRef);
 
-  useLayoutEffect(() => {
-    if (inputRef.current && selectionRef.current !== null) {
-      inputRef.current.setSelectionRange(
-        selectionRef.current,
-        selectionRef.current
-      );
-    }
-  });
+  useEffect(() => {
+    setRawValue(sanitizeNumericInput(initialValue, maxDecimals, decimalChar));
+  }, [initialValue, maxDecimals, decimalChar]);
+
+  const transformOpts = {
+    separatorCount,
+    separatorChar,
+    decimalChar,
+    suffix,
+    locale,
+    showZero,
+    maxDecimals,
+  };
+
+  const displayValue = transformNumber(rawValue, transformOpts);
 
   const updateValue = useCallback(
     (nextRaw: string) => {
       if (nextRaw !== "" && nextRaw !== ".") {
-        try {
-          const num = new Decimal(nextRaw);
-          if (max !== undefined && num.gt(max)) return;
-        } catch {
-          return;
-        }
+        const num = parseFloat(nextRaw);
+        if (max !== undefined && !isNaN(num) && num > max) return;
       }
       setRawValue(nextRaw);
       onValueChange?.(nextRaw);
@@ -71,60 +74,70 @@ export const usePersianNumberInput = (
     const value = input.value;
     const sanitized = sanitizeNumericInput(value, maxDecimals, decimalChar);
 
-    const prevFormatted = transformNumber(rawValue, {
-      separatorCount,
-      separatorChar,
-      decimalChar,
-      suffix,
-      locale,
-      showZero,
-    });
-    const nextFormatted = transformNumber(sanitized, {
-      separatorCount,
-      separatorChar,
-      decimalChar,
-      suffix,
-      locale,
-      showZero,
-    });
+    if (sanitized !== rawValue) {
+      if (sanitized !== "" && sanitized !== ".") {
+        const num = parseFloat(sanitized);
+        if (max !== undefined && !isNaN(num) && num > max) {
+          input.value = displayValue;
+          return;
+        }
+      }
 
-    let cursor = input.selectionStart || 0;
-    const diff = nextFormatted.length - prevFormatted.length;
-    selectionRef.current = cursor + diff;
+      const prevFormatted = transformNumber(rawValue, transformOpts);
+      const nextFormatted = transformNumber(sanitized, transformOpts);
 
-    updateValue(sanitized);
+      let cursor = input.selectionStart || 0;
+      const diff = nextFormatted.length - prevFormatted.length;
+      setCursor(cursor + diff);
+
+      setRawValue(sanitized);
+      onValueChange?.(sanitized);
+    } else if (input.value !== displayValue) {
+      input.value = displayValue;
+    }
   };
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "e" || e.key === "E" || e.key === "+" || e.key === " ") {
+        e.preventDefault();
+      }
+
+      if (e.key === "Backspace" && suffix && rawValue) {
+        const currentValue = (e.target as HTMLInputElement).value;
+        const suffixTextStart = currentValue.length - suffix.length;
+        const cursorPos =
+          (e.target as HTMLInputElement).selectionStart || 0;
+
+        if (cursorPos > suffixTextStart) {
+          e.preventDefault();
+          const newRaw = rawValue.slice(0, -1);
+          updateValue(newRaw);
+        }
+      }
+    },
+    [suffix, rawValue, updateValue]
+  );
 
   const onBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
       if (rawValue && rawValue !== ".") {
-        try {
-          const num = new Decimal(rawValue);
-          if (min !== undefined && num.lt(min)) {
-            const minStr = String(min);
-            setRawValue(minStr);
-            onValueChange?.(minStr);
-          }
-        } catch {}
+        const num = parseFloat(rawValue);
+        if (min !== undefined && !isNaN(num) && num < min) {
+          const minStr = String(min);
+          setRawValue(minStr);
+          onValueChange?.(minStr);
+        }
       }
       externalOnBlur?.(event);
     },
     [rawValue, min, onValueChange, externalOnBlur]
   );
 
-  const displayValue = transformNumber(rawValue, {
-    separatorCount,
-    separatorChar,
-    decimalChar,
-    suffix,
-    locale,
-    showZero,
-    maxDecimals,
-  });
-
   return {
     value: displayValue,
     onChange,
+    onKeyDown,
     onBlur,
     rawValue,
     inputRef,
