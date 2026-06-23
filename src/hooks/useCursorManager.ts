@@ -1,14 +1,13 @@
-import { useRef, useState, useLayoutEffect, useCallback } from "react";
+import { useRef, useLayoutEffect, useCallback } from "react";
 
 export const useCursorManager = (
-  inputRef: React.RefObject<HTMLInputElement | null>
+  inputRef: React.RefObject<HTMLInputElement | null>,
+  trigger: number
 ) => {
   const cursorRef = useRef<number | null>(null);
-  const [tick, setTick] = useState(0);
 
   const setCursor = useCallback((pos: number) => {
     cursorRef.current = pos;
-    setTick((t) => t + 1);
   }, []);
 
   useLayoutEffect(() => {
@@ -19,7 +18,7 @@ export const useCursorManager = (
       );
       cursorRef.current = null;
     }
-  }, [tick, inputRef]);
+  }, [trigger, inputRef]);
 
   return { setCursor };
 };

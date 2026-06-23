@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
   transformNumber,
   TransformNumberOptions,
@@ -14,6 +14,20 @@ interface UsePersianNumberInputProps
   max?: number;
   maxDecimals?: number;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
+}
+
+const ALLOWED_KEY_PATTERN = /^[0-9.\-]$/;
+const PERSIAN_ARABIC_DIGIT_RE = /^[\u0660-\u0669\u06F0-\u06F9]$/;
+
+function isAllowedKey(e: React.KeyboardEvent<HTMLInputElement>): boolean {
+  if (e.ctrlKey || e.metaKey || e.altKey) return true;
+  const { key } = e;
+  if (key === "Backspace" || key === "Delete" || key === "Tab") return true;
+  if (key.startsWith("Arrow") || key === "Home" || key === "End") return true;
+  if (key === "Enter") return true;
+  if (ALLOWED_KEY_PATTERN.test(key)) return true;
+  if (PERSIAN_ARABIC_DIGIT_RE.test(key)) return true;
+  return false;
 }
 
 export const usePersianNumberInput = (
@@ -39,21 +53,29 @@ export const usePersianNumberInput = (
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const { setCursor } = useCursorManager(inputRef);
+  const rawValueLen = rawValue ? rawValue.length : 0;
+  const { setCursor } = useCursorManager(inputRef, rawValueLen);
 
-  useEffect(() => {
-    setRawValue(sanitizeNumericInput(initialValue, maxDecimals, decimalChar));
-  }, [initialValue, maxDecimals, decimalChar]);
-
-  const transformOpts = {
-    separatorCount,
-    separatorChar,
-    decimalChar,
-    suffix,
-    locale,
-    showZero,
-    maxDecimals,
-  };
+  const transformOpts = useMemo(
+    () => ({
+      separatorCount,
+      separatorChar,
+      decimalChar,
+      suffix,
+      locale,
+      showZero,
+      maxDecimals,
+    }),
+    [
+      separatorCount,
+      separatorChar,
+      decimalChar,
+      suffix,
+      locale,
+      showZero,
+      maxDecimals,
+    ]
+  );
 
   const displayValue = transformNumber(rawValue, transformOpts);
 
@@ -78,7 +100,6 @@ export const usePersianNumberInput = (
       if (sanitized !== "" && sanitized !== ".") {
         const num = parseFloat(sanitized);
         if (max !== undefined && !isNaN(num) && num > max) {
-          input.value = displayValue;
           return;
         }
       }
@@ -92,14 +113,12 @@ export const usePersianNumberInput = (
 
       setRawValue(sanitized);
       onValueChange?.(sanitized);
-    } else if (input.value !== displayValue) {
-      input.value = displayValue;
     }
   };
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "e" || e.key === "E" || e.key === "+" || e.key === " ") {
+      if (!isAllowedKey(e)) {
         e.preventDefault();
       }
 
@@ -117,6 +136,16 @@ export const usePersianNumberInput = (
       }
     },
     [suffix, rawValue, updateValue]
+  );
+
+  const onPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const pasted = e.clipboardData.getData("text");
+      const sanitized = sanitizeNumericInput(pasted, maxDecimals, decimalChar);
+      updateValue(sanitized);
+    },
+    [maxDecimals, decimalChar, updateValue]
   );
 
   const onBlur = useCallback(
@@ -138,6 +167,7 @@ export const usePersianNumberInput = (
     value: displayValue,
     onChange,
     onKeyDown,
+    onPaste,
     onBlur,
     rawValue,
     inputRef,

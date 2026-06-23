@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback } from "react";
+import React, { forwardRef, useCallback, useMemo } from "react";
 import { usePersianNumberInput } from "../hooks/usePersianNumberInput";
 import type { TransformNumberOptions } from "../utils/transformNumber";
 
@@ -47,10 +47,11 @@ const PersianNumberInput = forwardRef<
     maxDecimals,
     onBlur: propsOnBlur,
     onKeyDown: propsOnKeyDown,
+    onPaste: propsOnPaste,
     ...rest
   } = props;
 
-  const { value, onChange, onKeyDown, onBlur, inputRef } =
+  const { value, onChange, onKeyDown, onPaste, onBlur, inputRef } =
     usePersianNumberInput({
       initialValue,
       separatorCount,
@@ -66,7 +67,7 @@ const PersianNumberInput = forwardRef<
       onBlur: propsOnBlur,
     });
 
-  const mergedRef = mergeRefs(ref, inputRef);
+  const mergedRef = useMemo(() => mergeRefs(ref, inputRef), [ref, inputRef]);
 
   const composedOnKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -74,6 +75,14 @@ const PersianNumberInput = forwardRef<
       propsOnKeyDown?.(e);
     },
     [onKeyDown, propsOnKeyDown]
+  );
+
+  const composedOnPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      onPaste(e);
+      propsOnPaste?.(e);
+    },
+    [onPaste, propsOnPaste]
   );
 
   return (
@@ -86,6 +95,7 @@ const PersianNumberInput = forwardRef<
       value={value}
       onChange={onChange}
       onKeyDown={composedOnKeyDown}
+      onPaste={composedOnPaste}
       onBlur={onBlur}
     />
   );
