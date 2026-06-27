@@ -4,7 +4,6 @@ import { sanitizeNumericInput } from "../utils/digitUtils";
 
 interface EventOptions {
   keyFilter: KeyFilter;
-  suffix?: string;
   rawValue: string;
   maxDecimals?: number;
   decimalChar?: string;
@@ -16,7 +15,6 @@ interface EventOptions {
 export const useNumericInputEvents = (options: EventOptions) => {
   const {
     keyFilter,
-    suffix,
     rawValue,
     maxDecimals,
     decimalChar,
@@ -38,22 +36,9 @@ export const useNumericInputEvents = (options: EventOptions) => {
         e.preventDefault();
       }
 
-      if (e.key === "Backspace" && suffix && rawValue) {
-        const currentValue = (e.target as HTMLInputElement).value;
-        const suffixTextStart = currentValue.length - suffix.length;
-        const cursorPos =
-          (e.target as HTMLInputElement).selectionStart || 0;
-
-        if (cursorPos > suffixTextStart) {
-          e.preventDefault();
-          const newRaw = rawValue.slice(0, -1);
-          updateValue(newRaw);
-        }
-      }
-
       externalOnKeyDown?.(e);
     },
-    [keyFilter, suffix, rawValue, updateValue, externalOnKeyDown]
+    [keyFilter, updateValue, externalOnKeyDown]
   );
 
   const onPaste = useCallback(

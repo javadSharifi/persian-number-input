@@ -28,9 +28,7 @@ export const transformNumber = (
   } = options || {};
 
   if (rawValue === null || rawValue === undefined || rawValue === "") {
-    const zeroVal = showZero ? toLocalizedDigits("0", locale) : "";
-    if (zeroVal && suffix) return `${zeroVal} ${suffix}`;
-    return zeroVal;
+    return showZero ? toLocalizedDigits("0", locale) : "";
   }
 
   let [integerPart, fractionalPart] = rawValue.split(".");
@@ -40,9 +38,7 @@ export const transformNumber = (
     integerPart || (hasTrailingDot || fractionalPart !== undefined ? "0" : "");
 
   if (absIntPart === "" && !hasTrailingDot && fractionalPart === undefined) {
-    const zeroVal = showZero ? toLocalizedDigits("0", locale) : "";
-    if (zeroVal && suffix) return `${zeroVal} ${suffix}`;
-    return zeroVal;
+    return showZero ? toLocalizedDigits("0", locale) : "";
   }
 
   const groupedInt = groupDigits(absIntPart, separatorCount, separatorChar);
@@ -60,10 +56,6 @@ export const transformNumber = (
 
   if (locale !== "en") {
     finalStr = toLocalizedDigits(finalStr, locale);
-  }
-
-  if (suffix) {
-    finalStr = `${finalStr} ${suffix}`;
   }
 
   return finalStr;

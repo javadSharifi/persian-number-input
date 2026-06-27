@@ -38,7 +38,7 @@ English | [فارسی](./README.fa.md)
 - 🔢 **تبدیل خودکار ارقام** — فارسی (۰-۹) و عربی (٠-٩) به انگلیسی و برعکس
 - 🌍 **چند زبانه** — فارسی (`fa`)، عربی (`ar`)، انگلیسی (`en`)
 - 📊 **جداکننده هزارگان** — قابل تنظیم با هر کاراکتری
-- 💰 **آماده برای ارز** — پشتیبانی از پسوند (تومان، ریال، ر.س) و جداکننده اعشاری سفارشی
+- 💰 **آماده برای ارز** — پشتیبانی از پسوند (تومان، ریال، ر.س) به صورت overlay بصری مجزا از مقدار ورودی
 - ⚡ **فقط ~۱ کیلوبایت** — بدون هیچ dependency اضافه
 - 🎯 **TypeScript** — تعریف تایپ کامل
 - 🔄 **حفظ موقعیت cursor** — بدون جهش هنگام فرمت‌دهی
@@ -97,7 +97,8 @@ function App() {
 />
 ```
 
-خروجی: `۵,۰۰۰,۰۰۰ تومان`
+خروجی نمایشی: `۵,۰۰۰,۰۰۰` با `تومان` به صورت overlay بصری در کنار input.
+پسوند خارج از مقدار ورودی رندر می‌شود — هرگز با موقعیت cursor یا کلید Backspace تداخل ندارد.
 
 ---
 
@@ -114,6 +115,8 @@ function App() {
   onValueChange={(value) => console.log(value)}
 />
 ```
+
+خروجی نمایشی: `۰` با `ریال` به صورت overlay بصری.
 
 ---
 
@@ -146,7 +149,7 @@ function App() {
 />
 ```
 
-خروجی: `٩٨٧,٦٥٤ ر.س`
+خروجی نمایشی: `٩٨٧,٦٥٤` با `ر.س` به صورت overlay بصری.
 
 ---
 
@@ -188,30 +191,50 @@ function ProductForm() {
 import { usePersianNumberInput } from "persian-number-input";
 
 function CustomInput() {
-  const { value, onChange, onBlur, rawValue } = usePersianNumberInput({
-    initialValue: 1000,
-    locale: "fa",
-    separatorCount: 3,
-    maxDecimals: 2,
-    min: 0,
-    max: 1000000,
-    onValueChange: (val) => console.log("مقدار انگلیسی:", val),
-  });
+  const { value, onChange, onBlur, rawValue, isInvalid } =
+    usePersianNumberInput({
+      initialValue: 1000,
+      locale: "fa",
+      suffix: "تومان",
+      maxDecimals: 2,
+      min: 0,
+      max: 1000000,
+      onValueChange: (val) => console.log("مقدار انگلیسی:", val),
+    });
 
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={onChange}
-      onBlur={onBlur}
-      onPaste={onPaste}
-      dir="rtl"
-    />
+    <div>
+      <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          onPaste={onPaste}
+          dir="ltr"
+          aria-invalid={isInvalid || undefined}
+        />
+        <span
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          تومان
+        </span>
+      </div>
+      <p>مقدار خام: {rawValue}</p>
+    </div>
   );
 }
 ```
 
-Hook همچنین `isInvalid` (boolean) رو وقتی مقدار از `max` بیشتر بشه برمی‌گردونه، و `onPaste` برای مدیریت رویداد paste.
+وقتی از هوک با `suffix` استفاده می‌کنید، `<input>` رو در یک کانتینر `relative` بپیچید و پسوند را به صورت `<span>` با `pointer-events: none` رندر کنید. این کار تضمین می‌کند پسوند هرگز با موقعیت cursor یا کلید Backspace تداخل نداشته باشد. برای جلوگیری از همپوشانی متن، `paddingRight` مناسب به input اضافه کنید.
 
 ---
 
@@ -267,7 +290,7 @@ function LoanCalculator() {
 | `separatorCount` | `number`                               | `3`         | تعداد ارقام بین جداکننده‌ها (۳ = هزارگان)                       |
 | `separatorChar`  | `string`                               | `","`       | کاراکتر جداکننده هزارگان                                         |
 | `decimalChar`    | `string`                               | خودکار      | جداکننده اعشار (`٫` برای fa، `.` برای en)                       |
-| `suffix`         | `string`                               | `undefined` | پسوند — مثل `تومان`، `ریال`                                     |
+| `suffix`         | `string`                               | `undefined` | پسوند بصری خارج از مقدار ورودی — هرگز با cursor، انتخاب متن یا Backspace تداخل ندارد (مثل `تومان`، `ریال`) |
 | `maxDecimals`    | `number`                               | `undefined` | حداکثر رقم اعشار مجاز                                            |
 | `min`            | `number`                               | `undefined` | کمترین مقدار مجاز                                                |
 | `max`            | `number`                               | `undefined` | بیشترین مقدار مجاز — اعتبارسنجی نرم (علامت‌گذاری invalid، اعمال در blur) |
@@ -292,10 +315,11 @@ transformNumber("1234567.89", {
   separatorCount: 3,
   separatorChar: ",",
   maxDecimals: 2,
-  suffix: "تومان",
 });
-// ← "۱,۲۳۴,۵۶۷٫۸۹ تومان"
+// → "۱,۲۳۴,۵۶۷٫۸۹"
 ```
+
+> نکته: `suffix` یک ویژگی صرفاً UI در کامپوننت و هوک است. تابع `transformNumber` پسوند را به خروجی اضافه نمی‌کند — برای نمایش پسوند از کامپوننت `PersianNumberInput` یا هوک `usePersianNumberInput` استفاده کنید.
 
 #### `toEnglishDigits(str, decimalChar?)`
 

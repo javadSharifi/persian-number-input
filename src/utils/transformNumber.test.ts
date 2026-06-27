@@ -43,8 +43,8 @@ describe("transformNumber", () => {
       expect(transformNumber(null as unknown as string, { showZero: true })).toBe("۰");
     });
 
-    it("returns localized zero with suffix when showZero is true", () => {
-      expect(transformNumber("", { showZero: true, suffix: "متر" })).toBe("۰ متر");
+    it("returns localized zero with suffix when showZero is true (suffix ignored in transform)", () => {
+      expect(transformNumber("", { showZero: true, suffix: "متر" })).toBe("۰");
     });
   });
 
@@ -91,16 +91,16 @@ describe("transformNumber", () => {
   });
 
   describe("suffix", () => {
-    it("appends suffix", () => {
-      expect(transformNumber("1234", { suffix: "متر" })).toBe("۱,۲۳۴ متر");
+    it("does not append suffix to formatted value", () => {
+      expect(transformNumber("1234", { suffix: "متر" })).toBe("۱,۲۳۴");
     });
 
-    it("appends suffix with decimal", () => {
-      expect(transformNumber("1234.5", { suffix: "kg" })).toBe("۱,۲۳۴٫۵ kg");
+    it("does not append suffix with decimal", () => {
+      expect(transformNumber("1234.5", { suffix: "kg" })).toBe("۱,۲۳۴٫۵");
     });
 
-    it("handles English locale with suffix", () => {
-      expect(transformNumber("1234", { locale: "en", suffix: "units" })).toBe("1,234 units");
+    it("handles English locale with suffix (suffix ignored)", () => {
+      expect(transformNumber("1234", { locale: "en", suffix: "units" })).toBe("1,234");
     });
   });
 
@@ -156,8 +156,8 @@ describe("transformNumber", () => {
       expect(transformNumber("", { showZero: true })).toBe("۰");
     });
 
-    it("shows zero with suffix and formatting", () => {
-      expect(transformNumber("", { showZero: true, suffix: "ریال" })).toBe("۰ ریال");
+    it("shows zero without suffix in formatted output", () => {
+      expect(transformNumber("", { showZero: true, suffix: "ریال" })).toBe("۰");
     });
   });
 });

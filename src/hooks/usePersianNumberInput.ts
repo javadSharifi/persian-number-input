@@ -31,7 +31,6 @@ export const usePersianNumberInput = (
     separatorCount = 3,
     separatorChar = ",",
     decimalChar,
-    suffix,
     locale = "fa",
     showZero = false,
     onValueChange,
@@ -63,7 +62,6 @@ export const usePersianNumberInput = (
     separatorCount,
     separatorChar,
     decimalChar,
-    suffix,
     locale,
     showZero,
     maxDecimals,
@@ -90,7 +88,6 @@ export const usePersianNumberInput = (
 
   const { onKeyDown, onPaste } = useNumericInputEvents({
     keyFilter,
-    suffix,
     rawValue: rawValue ?? "",
     maxDecimals,
     decimalChar,

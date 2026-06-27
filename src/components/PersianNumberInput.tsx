@@ -1,4 +1,10 @@
-import React, { forwardRef, useMemo } from "react";
+import React, {
+  forwardRef,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useState,
+} from "react";
 import {
   usePersianNumberInput,
   type UsePersianNumberInputProps,
@@ -52,6 +58,8 @@ const PersianNumberInput = forwardRef<
     onBlur: externalOnBlur,
     onKeyDown: externalOnKeyDown,
     onPaste: externalOnPaste,
+    className,
+    style: inputStyle,
     ...rest
   } = props;
 
@@ -78,20 +86,65 @@ const PersianNumberInput = forwardRef<
 
   const mergedRef = useMemo(() => mergeRefs(ref, inputRef), [ref, inputRef]);
 
+  const suffixRef = useRef<HTMLSpanElement>(null);
+  const [suffixWidth, setSuffixWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    if (suffixRef.current) {
+      setSuffixWidth(suffixRef.current.offsetWidth);
+    } else {
+      setSuffixWidth(0);
+    }
+  }, [suffix]);
+
   return (
-    <input
-      ref={mergedRef}
-      type="text"
-      inputMode="decimal"
-      dir="ltr"
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKeyDown}
-      onPaste={onPaste}
-      onBlur={onBlur}
-      aria-invalid={isInvalid || undefined}
-      {...rest}
-    />
+    <div
+      className="relative inline-flex items-center w-full"
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      <input
+        ref={mergedRef}
+        type="text"
+        inputMode="decimal"
+        dir="ltr"
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onPaste={onPaste}
+        onBlur={onBlur}
+        aria-invalid={isInvalid || undefined}
+        className={className}
+        style={{
+          ...(suffix && suffixWidth > 0
+            ? { paddingRight: suffixWidth + 4 }
+            : {}),
+          ...(inputStyle || {}),
+        }}
+        {...rest}
+      />
+      {suffix && (
+        <span
+          ref={suffixRef}
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {suffix}
+        </span>
+      )}
+    </div>
   );
 });
 

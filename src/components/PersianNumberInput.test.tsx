@@ -252,13 +252,14 @@ describe("PersianNumberInput", () => {
   });
 
   describe("suffix", () => {
-    it("displays suffix", () => {
+    it("displays suffix as separate span", () => {
       render(<PersianNumberInput suffix="متر" />);
       const input = screen.getByRole("textbox");
 
       fireEvent.change(input, { target: { value: "1234" } });
 
-      expect(input).toHaveValue("۱,۲۳۴ متر");
+      expect(input).toHaveValue("۱,۲۳۴");
+      expect(screen.getByText("متر")).toBeInTheDocument();
     });
   });
 
@@ -310,11 +311,12 @@ describe("PersianNumberInput", () => {
       expect(input).toHaveValue("۰");
     });
 
-    it("shows zero with suffix", () => {
+    it("shows zero with suffix as separate span", () => {
       render(<PersianNumberInput showZero suffix="ریال" />);
       const input = screen.getByRole("textbox");
 
-      expect(input).toHaveValue("۰ ریال");
+      expect(input).toHaveValue("۰");
+      expect(screen.getByText("ریال")).toBeInTheDocument();
     });
   });
 
@@ -461,10 +463,10 @@ describe("PersianNumberInput", () => {
       const input = screen.getByRole("textbox");
 
       fireEvent.change(input, { target: { value: "1234" } });
-      expect(input).toHaveValue("۱,۲۳۴ متر");
+      expect(input).toHaveValue("۱,۲۳۴");
 
       fireEvent.change(input, { target: { value: "۱,۲۳" } });
-      expect(input).toHaveValue("۱۲۳ متر");
+      expect(input).toHaveValue("۱۲۳");
     });
 
     it("handles rapid character deletion in ltr mode", () => {

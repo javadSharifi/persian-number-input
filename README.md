@@ -38,7 +38,7 @@ Form receives: "1234567"
 - 🔢 **Automatic digit conversion** — Persian (۰-۹) and Arabic (٠-٩) to English and back
 - 🌍 **Multi-locale** — `fa` (Farsi/Persian), `ar` (Arabic), `en` (English)
 - 📊 **Thousand separator formatting** — customizable separator character and group size
-- 💰 **Currency-ready** — add prefix, suffix (e.g. تومان, ریال, ر.س), and custom decimal separator
+- 💰 **Currency-ready** — add suffix (e.g. تومان, ریال, ر.س) as a visual-only overlay, and custom decimal separator
 - ⚡ **~1KB gzipped** — zero extra dependencies, pure TypeScript
 - 🎯 **TypeScript** — full type definitions included
 - 🔄 **Cursor-position preservation** — no jump on re-format
@@ -98,7 +98,9 @@ Output displayed to user: `۱,۲۳۴,۵۶۷`
 />
 ```
 
-Displayed: `۵,۰۰۰,۰۰۰ تومان`
+Displayed to user: `۵,۰۰۰,۰۰۰` with `تومان` rendered as a visual-only overlay next to the input.
+
+The suffix is rendered outside the input's value — it never interferes with cursor position, selection, or backspace behavior.
 
 ---
 
@@ -114,7 +116,7 @@ Displayed: `۵,۰۰۰,۰۰۰ تومان`
 />
 ```
 
-Displayed: `٩٨٧,٦٥٤ ر.س`
+Displayed to user: `٩٨٧,٦٥٤` with `ر.س` rendered as a visual-only overlay.
 
 ---
 
@@ -148,6 +150,8 @@ Displayed: `۱,۲۳۴٫۵۶`
   onValueChange={(value) => console.log(value)}
 />
 ```
+
+Displayed to user: `۰` with `ریال` rendered as visual-only overlay.
 
 ---
 
@@ -189,30 +193,50 @@ function ProductForm() {
 import { usePersianNumberInput } from "persian-number-input";
 
 function CustomInput() {
-  const { value, onChange, onBlur, rawValue } = usePersianNumberInput({
-    initialValue: 1000,
-    locale: "fa",
-    separatorCount: 3,
-    maxDecimals: 2,
-    min: 0,
-    max: 1000000,
-    onValueChange: (val) => console.log("English value:", val),
-  });
+  const { value, onChange, onBlur, rawValue, isInvalid } =
+    usePersianNumberInput({
+      initialValue: 1000,
+      locale: "fa",
+      suffix: "تومان",
+      maxDecimals: 2,
+      min: 0,
+      max: 1000000,
+      onValueChange: (val) => console.log("English value:", val),
+    });
 
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={onChange}
-      onBlur={onBlur}
-      onPaste={onPaste}
-      dir="rtl"
-    />
+    <div>
+      <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          onPaste={onPaste}
+          dir="ltr"
+          aria-invalid={isInvalid || undefined}
+        />
+        <span
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          تومان
+        </span>
+      </div>
+      <p>Raw value: {rawValue}</p>
+    </div>
   );
 }
 ```
 
-The hook also returns `isInvalid` (boolean) when the value exceeds `max`, and `onPaste` for paste event handling.
+When using a suffix with the hook, wrap the `<input>` in a relative container and render the suffix as an absolutely-positioned `<span>` with `pointer-events: none`. This ensures the suffix never interferes with cursor positioning or backspace behavior. Add `paddingRight` to the input to prevent text from overlapping the suffix overlay.
 
 ---
 
@@ -227,7 +251,7 @@ The hook also returns `isInvalid` (boolean) when the value exceeds `max`, and `o
 | `separatorCount` | `number`                               | `3`         | Digits per group (3 = thousand separator)            |
 | `separatorChar`  | `string`                               | `","`       | Thousand separator character                         |
 | `decimalChar`    | `string`                               | Auto        | Decimal separator (`٫` for fa, `.` for en)          |
-| `suffix`         | `string`                               | `undefined` | Currency or unit suffix (e.g. `تومان`, `ریال`)      |
+| `suffix`         | `string`                               | `undefined` | Visual-only suffix rendered outside the input value — never affects cursor, selection, or backspace (e.g. `تومان`, `ریال`) |
 | `maxDecimals`    | `number`                               | `undefined` | Maximum allowed decimal places                       |
 | `min`            | `number`                               | `undefined` | Minimum allowed value                                |
 | `max`            | `number`                               | `undefined` | Maximum allowed value — soft validation (marks invalid, clamps on blur) |
@@ -252,10 +276,11 @@ transformNumber("1234567.89", {
   separatorCount: 3,
   separatorChar: ",",
   maxDecimals: 2,
-  suffix: "تومان",
 });
-// → "۱,۲۳۴,۵۶۷٫۸۹ تومان"
+// → "۱,۲۳۴,۵۶۷٫۸۹"
 ```
+
+> Note: `suffix` is a UI-only feature of the component and hook. The `transformNumber` utility does not append suffix — use the `PersianNumberInput` component or `usePersianNumberInput` hook for suffix rendering.
 
 #### `toEnglishDigits(str, decimalChar?)`
 

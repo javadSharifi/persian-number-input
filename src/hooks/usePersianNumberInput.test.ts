@@ -379,7 +379,7 @@ describe("usePersianNumberInput", () => {
   });
 
   describe("suffix", () => {
-    it("includes suffix in display value", () => {
+    it("does not include suffix in display value", () => {
       const { result } = renderHook(() =>
         usePersianNumberInput({ suffix: "متر" })
       );
@@ -388,7 +388,7 @@ describe("usePersianNumberInput", () => {
         result.current.onChange(createChangeEvent({ value: "1234" }));
       });
 
-      expect(result.current.value).toBe("۱,۲۳۴ متر");
+      expect(result.current.value).toBe("۱,۲۳۴");
     });
   });
 
@@ -647,14 +647,14 @@ describe("usePersianNumberInput", () => {
         usePersianNumberInput({ initialValue: "1234", suffix: "متر" })
       );
 
-      expect(result.current.value).toBe("۱,۲۳۴ متر");
+      expect(result.current.value).toBe("۱,۲۳۴");
 
       act(() => {
         result.current.onChange(createChangeEvent({ value: "۱,۲۳" }));
       });
 
       expect(result.current.rawValue).toBe("123");
-      expect(result.current.value).toBe("۱۲۳ متر");
+      expect(result.current.value).toBe("۱۲۳");
     });
 
     it("correctly handles rapid multiple deletions", () => {
