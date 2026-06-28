@@ -101,22 +101,24 @@ export const usePersianNumberInput = (
       const valid = validateOnChange(sanitized);
       setIsInvalid(!valid);
 
-      const prevFormatted = transformNumber(rawValue, transformOpts);
-      const nextFormatted = transformNumber(sanitized, transformOpts);
+      if (locale === "en") {
+        const prevFormatted = transformNumber(rawValue, transformOpts);
+        const nextFormatted = transformNumber(sanitized, transformOpts);
 
-      cursorTrigger.current += 1;
-      const formattedCursor = input.selectionStart ?? 0;
-      let rawCursor = 0;
-      for (let i = 0; i < formattedCursor && i < prevFormatted.length; i++) {
-        if (prevFormatted[i] !== separatorChar) rawCursor++;
+        cursorTrigger.current += 1;
+        const formattedCursor = input.selectionStart ?? 0;
+        let rawCursor = 0;
+        for (let i = 0; i < formattedCursor && i < prevFormatted.length; i++) {
+          if (prevFormatted[i] !== separatorChar) rawCursor++;
+        }
+        let newFormattedCursor = nextFormatted.length;
+        let rawCount = 0;
+        for (let i = 0; i < nextFormatted.length; i++) {
+          if (rawCount >= rawCursor) { newFormattedCursor = i; break; }
+          if (nextFormatted[i] !== separatorChar) rawCount++;
+        }
+        setCursor(newFormattedCursor);
       }
-      let newFormattedCursor = nextFormatted.length;
-      let rawCount = 0;
-      for (let i = 0; i < nextFormatted.length; i++) {
-        if (rawCount >= rawCursor) { newFormattedCursor = i; break; }
-        if (nextFormatted[i] !== separatorChar) rawCount++;
-      }
-      setCursor(newFormattedCursor);
 
       setRawValue(sanitized);
       if (valid) {
