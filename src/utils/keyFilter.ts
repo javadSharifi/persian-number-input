@@ -3,11 +3,14 @@ export interface KeyFilterEvent {
   ctrlKey: boolean;
   metaKey: boolean;
   altKey: boolean;
+  currentValue?: string;
+  selectionStart?: number;
 }
 
 export interface KeyFilterRule {
   pattern?: RegExp;
   key?: string;
+  validate?: (e: KeyFilterEvent) => boolean;
   description?: string;
 }
 
@@ -19,6 +22,7 @@ export const createKeyFilter = (rules: KeyFilterRule[]): KeyFilter => {
     for (const rule of rules) {
       if (rule.key && e.key === rule.key) return true;
       if (rule.pattern?.test(e.key)) return true;
+      if (rule.validate?.(e)) return true;
     }
     return false;
   };
@@ -32,11 +36,23 @@ export const DEFAULT_NUMERIC_RULES: KeyFilterRule[] = [
   { key: "Home" },
   { key: "End" },
   { pattern: /^Arrow/ },
-  { pattern: /^[0-9.\-]$/ },
+  { pattern: /^[0-9.]$/ },
   { pattern: /^[\u0660-\u0669\u06F0-\u06F9]$/ },
 ];
 
 export const createNumericKeyFilter = (
   extraRules: KeyFilterRule[] = []
-): KeyFilter =>
-  createKeyFilter([...DEFAULT_NUMERIC_RULES, ...extraRules]);
+): KeyFilter => {
+  const baseRules = DEFAULT_NUMERIC_RULES.filter(
+    r => r.pattern?.source !== "^[0-9.]$"
+  );
+  const digitRule: KeyFilterRule = { pattern: /^[0-9.]$/ };
+  const negativeRule: KeyFilterRule = {
+    description: "minus only at start",
+    validate: (e) =>
+      e.key === "-" &&
+      (e.selectionStart ?? 1) === 0 &&
+      !(e.currentValue ?? "").startsWith("-"),
+  };
+  return createKeyFilter([...baseRules, digitRule, negativeRule, ...extraRules]);
+};

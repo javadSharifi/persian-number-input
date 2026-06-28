@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   transformNumber,
   TransformNumberOptions,
@@ -49,14 +49,9 @@ export const usePersianNumberInput = (
 
   const [isInvalid, setIsInvalid] = useState(false);
 
-  useEffect(() => {
-    setRawValue(sanitizeNumericInput(initialValue, maxDecimals, decimalChar));
-    setIsInvalid(false);
-  }, [initialValue, maxDecimals, decimalChar]);
-
   const inputRef = useRef<HTMLInputElement>(null);
-  const rawValueLen = rawValue ? rawValue.length : 0;
-  const { setCursor } = useCursorManager(inputRef, rawValueLen);
+  const cursorTrigger = useRef(0);
+  const { setCursor } = useCursorManager(inputRef, cursorTrigger.current);
 
   const { displayValue, transformOpts } = useNumberFormatter(rawValue ?? "", {
     separatorCount,
@@ -91,6 +86,7 @@ export const usePersianNumberInput = (
     rawValue: rawValue ?? "",
     maxDecimals,
     decimalChar,
+    separatorChar,
     updateValue,
     onKeyDown: externalOnKeyDown,
     onPaste: externalOnPaste,
@@ -108,9 +104,19 @@ export const usePersianNumberInput = (
       const prevFormatted = transformNumber(rawValue, transformOpts);
       const nextFormatted = transformNumber(sanitized, transformOpts);
 
-      let cursor = input.selectionStart || 0;
-      const diff = nextFormatted.length - prevFormatted.length;
-      setCursor(cursor + diff);
+      cursorTrigger.current += 1;
+      const formattedCursor = input.selectionStart ?? 0;
+      let rawCursor = 0;
+      for (let i = 0; i < formattedCursor && i < prevFormatted.length; i++) {
+        if (prevFormatted[i] !== separatorChar) rawCursor++;
+      }
+      let newFormattedCursor = nextFormatted.length;
+      let rawCount = 0;
+      for (let i = 0; i < nextFormatted.length; i++) {
+        if (rawCount >= rawCursor) { newFormattedCursor = i; break; }
+        if (nextFormatted[i] !== separatorChar) rawCount++;
+      }
+      setCursor(newFormattedCursor);
 
       setRawValue(sanitized);
       if (valid) {

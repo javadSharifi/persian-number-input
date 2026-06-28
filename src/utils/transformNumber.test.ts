@@ -43,8 +43,8 @@ describe("transformNumber", () => {
       expect(transformNumber(null as unknown as string, { showZero: true })).toBe("۰");
     });
 
-    it("returns localized zero with suffix when showZero is true (suffix ignored in transform)", () => {
-      expect(transformNumber("", { showZero: true, suffix: "متر" })).toBe("۰");
+    it("passes bare minus through as-is (no digits to format)", () => {
+      expect(transformNumber("-")).toBe("-");
     });
   });
 
@@ -90,17 +90,22 @@ describe("transformNumber", () => {
     });
   });
 
+  // FAILS: suffix was declared but never applied — BUG 7
   describe("suffix", () => {
-    it("does not append suffix to formatted value", () => {
-      expect(transformNumber("1234", { suffix: "متر" })).toBe("۱,۲۳۴");
+    it("appends suffix to formatted value", () => {
+      expect(transformNumber("1234", { suffix: "متر" })).toBe("۱,۲۳۴متر");
     });
 
-    it("does not append suffix with decimal", () => {
-      expect(transformNumber("1234.5", { suffix: "kg" })).toBe("۱,۲۳۴٫۵");
+    it("appends suffix with decimal", () => {
+      expect(transformNumber("1234.5", { suffix: "kg" })).toBe("۱,۲۳۴٫۵kg");
     });
 
-    it("handles English locale with suffix (suffix ignored)", () => {
-      expect(transformNumber("1234", { locale: "en", suffix: "units" })).toBe("1,234");
+    it("handles English locale with suffix", () => {
+      expect(transformNumber("1234", { locale: "en", suffix: "units" })).toBe("1,234units");
+    });
+
+    it("appends suffix with negative number", () => {
+      expect(transformNumber("-1234", { locale: "en", suffix: "m" })).toBe("-1,234m");
     });
   });
 
@@ -156,7 +161,7 @@ describe("transformNumber", () => {
       expect(transformNumber("", { showZero: true })).toBe("۰");
     });
 
-    it("shows zero without suffix in formatted output", () => {
+    it("shows zero without suffix (early return before suffix code)", () => {
       expect(transformNumber("", { showZero: true, suffix: "ریال" })).toBe("۰");
     });
   });

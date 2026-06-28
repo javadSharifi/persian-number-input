@@ -58,5 +58,7 @@ export const transformNumber = (
     finalStr = toLocalizedDigits(finalStr, locale);
   }
 
+  if (suffix) finalStr = `${finalStr}${suffix}`;
+
   return finalStr;
 };

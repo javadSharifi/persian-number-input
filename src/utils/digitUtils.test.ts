@@ -51,6 +51,10 @@ describe("toEnglishDigits / convertToEnglishDigits", () => {
   it("is aliased as convertToEnglishDigits", () => {
     expect(convertToEnglishDigits("۱۲۳")).toBe("123");
   });
+
+  it("preserves bare minus sign", () => {
+    expect(toEnglishDigits("-")).toBe("-");
+  });
 });
 
 describe("toLocalizedDigits", () => {
@@ -215,6 +219,21 @@ describe("sanitizeNumericInput", () => {
 
   it("ignores second decimal point with negative numbers", () => {
     expect(sanitizeNumericInput("-12.34.56")).toBe("-12.34");
+  });
+
+  // FAILS: bare "-" was stripped to "" — BUG 6
+  it("preserves bare minus as intermediate state", () => {
+    expect(sanitizeNumericInput("-")).toBe("-");
+  });
+
+  // FAILS: "-0" was stripped to "0" — BUG 6
+  it("preserves minus before zero", () => {
+    expect(sanitizeNumericInput("-0")).toBe("-0");
+  });
+
+  it("removes minus that is not at the start", () => {
+    expect(sanitizeNumericInput("1-23")).toBe("123");
+    expect(sanitizeNumericInput("-12-3")).toBe("-123");
   });
 });
 

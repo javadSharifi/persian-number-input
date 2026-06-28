@@ -119,7 +119,7 @@ export const sanitizeNumericInput = (
   str = stripNonNumeric(str);
   str = normalizeDecimals(str);
 
-  if (isNegative && str) {
+  if (isNegative) {
     str = "-" + str;
   }
 

@@ -62,7 +62,7 @@ export const createMaxRule = (
 ): ValidationRule => ({
   timing,
   validate: (rawValue: string) => {
-    if (rawValue === "" || rawValue === "." || max === undefined) {
+    if (rawValue === "" || rawValue === "." || rawValue === "-" || max === undefined) {
       return { valid: true };
     }
     const maxStr = String(max);
@@ -79,7 +79,7 @@ export const createMaxRule = (
 export const createMinRule = (min?: number): ValidationRule => ({
   timing: ValidationTiming.OnBlur,
   validate: (rawValue: string) => {
-    if (!rawValue || rawValue === "." || min === undefined) {
+    if (!rawValue || rawValue === "." || rawValue === "-" || min === undefined) {
       return { valid: true };
     }
     const minStr = String(min);
