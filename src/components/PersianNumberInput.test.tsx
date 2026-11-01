@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useState } from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import PersianNumberInput from "./PersianNumberInput";
 
@@ -537,6 +538,134 @@ describe("PersianNumberInput", () => {
       fireEvent.change(input, { target: { value: "۱۲۳۴" } });
 
       expect(input).toHaveValue("۱,۲۳۴");
+    });
+  });
+
+  describe("editing in a real input", () => {
+    const setNative = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value"
+    )!.set!;
+
+    function setup(props: React.ComponentProps<typeof PersianNumberInput>) {
+      render(<PersianNumberInput {...props} />);
+      return screen.getByRole("textbox") as HTMLInputElement;
+    }
+
+    // what the browser does when a key is typed: new text + caret, then an input event
+    async function type(input: HTMLInputElement, value: string, caret: number) {
+      setNative.call(input, value);
+      input.setSelectionRange(caret, caret);
+      fireEvent.input(input);
+      await act(() => Promise.resolve());
+    }
+
+    function paste(input: HTMLInputElement, text: string, start: number, end = start) {
+      input.setSelectionRange(start, end);
+      fireEvent.paste(input, { clipboardData: { getData: () => text } });
+    }
+
+    it("a second decimal point is ignored instead of cutting digits", async () => {
+      const input = setup({ locale: "en", initialValue: "12.5" });
+      await type(input, "1.2.5", 2); // "." typed after "1"
+      expect(input).toHaveValue("12.5");
+      expect(input.selectionStart).toBe(1);
+    });
+
+    it("a digit past maxDecimals is ignored instead of pushing digits out", async () => {
+      const input = setup({ locale: "en", initialValue: "1.23", maxDecimals: 2 });
+      await type(input, "1.923", 3);
+      expect(input).toHaveValue("1.23");
+      expect(input.selectionStart).toBe(2);
+    });
+
+    it("keeps the caret in place when an invalid character is typed", async () => {
+      const input = setup({ locale: "en", initialValue: "1234" });
+      await type(input, "1,a234", 3);
+      expect(input).toHaveValue("1,234");
+      expect(input.selectionStart).toBe(2);
+    });
+
+    it("puts the caret after pasted text", () => {
+      const input = setup({ locale: "en", initialValue: "1234" });
+      paste(input, "99", 1);
+      expect(input).toHaveValue("199,234");
+      expect(input.selectionStart).toBe(3);
+    });
+
+    it("ignores a paste with no number in it", () => {
+      const input = setup({ locale: "en", initialValue: "1234" });
+      paste(input, "abc", 0, 5);
+      expect(input).toHaveValue("1,234");
+    });
+
+    it("ignores a paste that adds a second decimal point", () => {
+      const input = setup({ locale: "en", initialValue: "12.5" });
+      paste(input, "3.4", 1);
+      expect(input).toHaveValue("12.5");
+    });
+
+    it("supports '.' as separator with ',' as decimal", async () => {
+      const onValueChange = vi.fn();
+      const input = setup({ locale: "en", separatorChar: ".", decimalChar: ",", onValueChange });
+      await type(input, "1234", 4);
+      expect(input).toHaveValue("1.234");
+      await type(input, "1.234,5", 7);
+      expect(input).toHaveValue("1.234,5");
+      expect(onValueChange).toHaveBeenLastCalledWith("1234.5");
+      paste(input, "9.000,25", 0, 7);
+      expect(input).toHaveValue("9.000,25");
+    });
+
+    it("does not block the custom decimal key", () => {
+      const input = setup({ locale: "en", separatorChar: ".", decimalChar: "," });
+      const ev = new KeyboardEvent("keydown", { key: ",", bubbles: true, cancelable: true });
+      input.dispatchEvent(ev);
+      expect(ev.defaultPrevented).toBe(false);
+    });
+  });
+
+  describe("controlled value", () => {
+    const setNative = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    const type = (input: HTMLElement, value: string) => {
+      setNative.call(input, value);
+      fireEvent.input(input);
+    };
+
+    it("shows a new value set from outside (form reset)", () => {
+      const { rerender } = render(<PersianNumberInput locale="en" value={1000} />);
+      const input = screen.getByRole("textbox");
+      type(input, "1,0005");
+      expect(input).toHaveValue("10,005");
+      rerender(<PersianNumberInput locale="en" value={0} />);
+      expect(input).toHaveValue("0");
+      rerender(<PersianNumberInput locale="en" value={undefined} />);
+      expect(input).toHaveValue("");
+      rerender(<PersianNumberInput locale="en" value={null} />);
+      expect(input).toHaveValue("");
+    });
+
+    it("keeps an unfinished decimal when the parent stores a Number", () => {
+      function Form() {
+        const [v, setV] = useState<number | undefined>(12);
+        return <PersianNumberInput locale="en" value={v} onValueChange={(s) => setV(s ? Number(s) : undefined)} />;
+      }
+      render(<Form />);
+      const input = screen.getByRole("textbox");
+      type(input, "12.");
+      expect(input).toHaveValue("12.");
+      type(input, "12.0");
+      expect(input).toHaveValue("12.0");
+      type(input, "12.05");
+      expect(input).toHaveValue("12.05");
+    });
+
+    it("accepts defaultValue without passing it to the input", () => {
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+      render(<PersianNumberInput locale="en" defaultValue={1234} />);
+      expect(screen.getByRole("textbox")).toHaveValue("1,234");
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 });

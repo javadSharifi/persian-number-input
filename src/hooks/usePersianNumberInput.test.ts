@@ -20,13 +20,14 @@ function setup(props: Record<string, unknown> = {}) {
     writable: true,
   });
 
-  function simulateChange(value: string, selectionStart: number) {
+  function simulateChange(value: string, selectionStart: number, inputType?: string) {
     input.value = value;
     input.setSelectionRange(selectionStart, selectionStart);
     act(() => {
       hookResult.result.current.onChange({
         target: input,
         currentTarget: input,
+        nativeEvent: { inputType },
       } as unknown as React.ChangeEvent<HTMLInputElement>);
     });
   }
@@ -154,10 +155,10 @@ describe("usePersianNumberInput", () => {
     // FAILS: old cursor calc gave diff=-1 → cursor=2 instead of 4
     it("cursor after deleting digit before separator in grouped number", () => {
       const { input, simulateChange } = setup({ initialValue: "123456" });
-      // "123,456" → delete "3" (position 3) → "12,456", cursor at 3
-      simulateChange("12,456", 3);
-      // sanitized "12456", formatted "12,456", cursor should be at raw pos 3 → formatted 4
-      expect(input.selectionStart).toBe(4);
+      // "123|,456" → backspace deletes "3" → "12|,456", browser caret at 2
+      simulateChange("12,456", 2);
+      // sanitized "12456", formatted "12,456", caret stays after "2"
+      expect(input.selectionStart).toBe(2);
     });
 
     // FAILS: old cursor calc gave diff=0 → cursor=4 instead of 5
@@ -391,6 +392,90 @@ describe("usePersianNumberInput", () => {
       const { wasBlocked } = simulateKeyDown("5", 1, "123");
 
       expect(wasBlocked).toBe(false);
+    });
+  });
+
+  describe("regressions", () => {
+    const blur = (h: ReturnType<typeof setup>["hookResult"]) =>
+      act(() => {
+        h.result.current.onBlur({} as React.FocusEvent<HTMLInputElement>);
+      });
+
+    it("caret follows the typed digit at the end", () => {
+      const { input, simulateChange } = setup({ initialValue: "1234" });
+      simulateChange("1,2345", 6);
+      expect(input.selectionStart).toBe(6); // "12,345|"
+    });
+
+    it("caret follows the typed digit in the middle", () => {
+      const { input, simulateChange } = setup({ initialValue: "123" });
+      simulateChange("1293", 3); // "12|3" + "9"
+      expect(input.selectionStart).toBe(4); // "1,29|3"
+    });
+
+    it("caret is kept for the fa locale too", () => {
+      const { input, simulateChange } = setup({ locale: "fa", initialValue: "123" });
+      simulateChange("۱۲9۳", 3);
+      expect(input.selectionStart).toBe(4); // "۱,۲۹|۳"
+    });
+
+    it("backspace on a separator deletes the digit before it", () => {
+      const { hookResult, input, simulateChange } = setup({ initialValue: "1234" });
+      simulateChange("1234", 1, "deleteContentBackward"); // "1,|234" minus ","
+      expect(hookResult.result.current.rawValue).toBe("234");
+      expect(input.selectionStart).toBe(0);
+    });
+
+    it("delete on a separator deletes the digit after it", () => {
+      const { hookResult, input, simulateChange } = setup({ initialValue: "1234" });
+      simulateChange("1234", 1, "deleteContentForward"); // "1|,234" minus ","
+      expect(hookResult.result.current.rawValue).toBe("134");
+      expect(input.selectionStart).toBe(1);
+    });
+
+    it("min=0 does not clamp .5 to 0", () => {
+      const { hookResult } = setup({ initialValue: ".5", min: 0 });
+      blur(hookResult);
+      expect(hookResult.result.current.rawValue).toBe(".5");
+    });
+
+    it("max=0 rejects .5", () => {
+      const { hookResult } = setup({ initialValue: ".5", max: 0 });
+      blur(hookResult);
+      expect(hookResult.result.current.rawValue).toBe("0");
+    });
+
+    it("blur clears unfinished input", () => {
+      const onValueChange = vi.fn();
+      const { hookResult, simulateChange } = setup({ onValueChange });
+      simulateChange("-", 1);
+      blur(hookResult);
+      expect(hookResult.result.current.rawValue).toBe("");
+      expect(onValueChange).toHaveBeenLastCalledWith("");
+
+      simulateChange("12.", 3);
+      blur(hookResult);
+      expect(hookResult.result.current.rawValue).toBe("12");
+    });
+
+    it("Persian decimal key keeps the dot with maxDecimals", () => {
+      const { hookResult, simulateChange } = setup({ locale: "fa", initialValue: "12", maxDecimals: 2 });
+      simulateChange("۱۲٫", 3);
+      expect(hookResult.result.current.rawValue).toBe("12.");
+    });
+
+    it("setRawValue sanitizes its input", () => {
+      const { hookResult } = setup();
+      act(() => hookResult.result.current.setRawValue("۱,۲۳۴"));
+      expect(hookResult.result.current.rawValue).toBe("1234");
+    });
+
+    it("does not block named keys or Persian decimal keys", () => {
+      const { simulateKeyDown } = setup();
+      for (const key of ["F5", "Escape", "PageUp", "Shift", "٫", "/"]) {
+        expect(simulateKeyDown(key).wasBlocked, key).toBe(false);
+      }
+      expect(simulateKeyDown("a").wasBlocked).toBe(true);
     });
   });
 });

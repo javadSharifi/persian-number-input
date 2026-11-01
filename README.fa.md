@@ -173,7 +173,7 @@ function ProductForm() {
             locale="fa"
             suffix="تومان"
             onValueChange={field.onChange}
-            initialValue={field.value}
+            value={field.value}
           />
         )}
       />
@@ -191,7 +191,7 @@ function ProductForm() {
 import { usePersianNumberInput } from "persian-number-input";
 
 function CustomInput() {
-  const { value, onChange, onBlur, rawValue, isInvalid } =
+  const { value, onChange, onBlur, onKeyDown, onPaste, inputRef, rawValue, isInvalid } =
     usePersianNumberInput({
       initialValue: 1000,
       locale: "fa",
@@ -210,7 +210,9 @@ function CustomInput() {
           value={value}
           onChange={onChange}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           onPaste={onPaste}
+          ref={inputRef}
           dir="ltr"
           aria-invalid={isInvalid || undefined}
         />
@@ -286,6 +288,7 @@ function LoanCalculator() {
 | ویژگی            | نوع                                    | پیش‌فرض     | توضیحات                                                          |
 | ---------------- | -------------------------------------- | ----------- | ---------------------------------------------------------------- |
 | `initialValue`   | `number \| string`                     | `undefined` | مقدار اولیه ورودی                                                |
+| `value`          | `number \| string \| null`            | `undefined` | مقدار کنترل‌شده — هر وقت تغییر کند (مثلاً reset فرم) در ورودی نمایش داده می‌شود. برای کتابخانه‌های فرم از این استفاده کنید |
 | `locale`         | `"fa" \| "ar" \| "en"`                 | `"fa"`      | زبان — فارسی، عربی یا انگلیسی                                   |
 | `separatorCount` | `number`                               | `3`         | تعداد ارقام بین جداکننده‌ها (۳ = هزارگان)                       |
 | `separatorChar`  | `string`                               | `","`       | کاراکتر جداکننده هزارگان                                         |
@@ -319,7 +322,7 @@ transformNumber("1234567.89", {
 // → "۱,۲۳۴,۵۶۷٫۸۹"
 ```
 
-> نکته: `suffix` یک ویژگی صرفاً UI در کامپوننت و هوک است. تابع `transformNumber` پسوند را به خروجی اضافه نمی‌کند — برای نمایش پسوند از کامپوننت `PersianNumberInput` یا هوک `usePersianNumberInput` استفاده کنید.
+> نکته: اگر `suffix` را به `transformNumber` بدهید، به انتهای رشتهٔ خروجی اضافه می‌شود. هوک `suffix` را نادیده می‌گیرد؛ آن را مثل نمونهٔ بالا خودتان نمایش دهید.
 
 #### `toEnglishDigits(str, decimalChar?)`
 

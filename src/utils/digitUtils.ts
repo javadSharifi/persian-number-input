@@ -114,6 +114,7 @@ export const sanitizeNumericInput = (
 ): string => {
   if (value === null || value === undefined) return "";
   let str = toEnglishDigits(String(value), decimalChar);
+  const endsWithDot = str.endsWith(".");
 
   const isNegative = str.startsWith("-");
   str = stripNonNumeric(str);
@@ -132,7 +133,7 @@ export const sanitizeNumericInput = (
   if (
     maxDecimals !== undefined &&
     maxDecimals > 0 &&
-    String(value).endsWith(decimalChar || ".")
+    endsWithDot
   ) {
     str = str.includes(".") ? str : `${str}.`;
   }

@@ -43,15 +43,14 @@ export const transformNumber = (
 
   const groupedInt = groupDigits(absIntPart, separatorCount, separatorChar);
 
+  // join with the final decimal char directly: a "." separator must not be mistaken for the decimal
+  const decimal =
+    decimalChar || (locale === "en" ? "." : localizeDecimalSeparator(".", locale));
   let finalStr = groupedInt;
   if (fractionalPart !== undefined) {
-    finalStr = `${groupedInt}.${fractionalPart}`;
+    finalStr = `${groupedInt}${decimal}${fractionalPart}`;
   } else if (hasTrailingDot) {
-    finalStr = `${groupedInt}.`;
-  }
-
-  if (decimalChar || locale !== "en") {
-    finalStr = localizeDecimalSeparator(finalStr, locale, decimalChar);
+    finalStr = `${groupedInt}${decimal}`;
   }
 
   if (locale !== "en") {

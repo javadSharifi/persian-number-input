@@ -175,7 +175,7 @@ function ProductForm() {
             locale="fa"
             suffix="تومان"
             onValueChange={field.onChange}
-            initialValue={field.value}
+            value={field.value}
           />
         )}
       />
@@ -193,7 +193,7 @@ function ProductForm() {
 import { usePersianNumberInput } from "persian-number-input";
 
 function CustomInput() {
-  const { value, onChange, onBlur, rawValue, isInvalid } =
+  const { value, onChange, onBlur, onKeyDown, onPaste, inputRef, rawValue, isInvalid } =
     usePersianNumberInput({
       initialValue: 1000,
       locale: "fa",
@@ -212,7 +212,9 @@ function CustomInput() {
           value={value}
           onChange={onChange}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           onPaste={onPaste}
+          ref={inputRef}
           dir="ltr"
           aria-invalid={isInvalid || undefined}
         />
@@ -247,6 +249,7 @@ When using a suffix with the hook, wrap the `<input>` in a relative container an
 | Prop             | Type                                   | Default     | Description                                          |
 | ---------------- | -------------------------------------- | ----------- | ---------------------------------------------------- |
 | `initialValue`   | `number \| string`                     | `undefined` | Initial value of the input                           |
+| `value`          | `number \| string \| null`            | `undefined` | Controlled value — when it changes (e.g. form reset) the input shows it. Use this with form libraries |
 | `locale`         | `"fa" \| "ar" \| "en"`                 | `"fa"`      | Digit locale — Farsi, Arabic, or English             |
 | `separatorCount` | `number`                               | `3`         | Digits per group (3 = thousand separator)            |
 | `separatorChar`  | `string`                               | `","`       | Thousand separator character                         |
@@ -280,7 +283,7 @@ transformNumber("1234567.89", {
 // → "۱,۲۳۴,۵۶۷٫۸۹"
 ```
 
-> Note: `suffix` is a UI-only feature of the component and hook. The `transformNumber` utility does not append suffix — use the `PersianNumberInput` component or `usePersianNumberInput` hook for suffix rendering.
+> Note: `transformNumber` appends `suffix` to the returned string when you pass it. The hook ignores `suffix`, so render it yourself as shown above.
 
 #### `toEnglishDigits(str, decimalChar?)`
 

@@ -165,4 +165,11 @@ describe("transformNumber", () => {
       expect(transformNumber("", { showZero: true, suffix: "ریال" })).toBe("۰");
     });
   });
+
+  it("keeps '.' separators apart from a ',' decimal", () => {
+    const opts = { locale: "en", separatorChar: ".", decimalChar: "," };
+    expect(transformNumber("1234", opts)).toBe("1.234");
+    expect(transformNumber("1234567.5", opts)).toBe("1.234.567,5");
+    expect(transformNumber("1234.", opts)).toBe("1.234,");
+  });
 });
