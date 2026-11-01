@@ -19,6 +19,8 @@ export type KeyFilter = (e: KeyFilterEvent) => boolean;
 export const createKeyFilter = (rules: KeyFilterRule[]): KeyFilter => {
   return (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return true;
+    // named keys (F5, Escape, PageUp, Shift, Unidentified...) are not text input
+    if (e.key.length > 1) return true;
     for (const rule of rules) {
       if (rule.key && e.key === rule.key) return true;
       if (rule.pattern?.test(e.key)) return true;
@@ -46,7 +48,8 @@ export const createNumericKeyFilter = (
   const baseRules = DEFAULT_NUMERIC_RULES.filter(
     r => r.pattern?.source !== "^[0-9.]$"
   );
-  const digitRule: KeyFilterRule = { pattern: /^[0-9.]$/ };
+  // ٫ and / are Persian decimal keys; toEnglishDigits maps both to "."
+  const digitRule: KeyFilterRule = { pattern: /^[0-9.٫/]$/ };
   const negativeRule: KeyFilterRule = {
     description: "minus only at start",
     validate: (e) =>

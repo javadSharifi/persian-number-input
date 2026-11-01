@@ -31,8 +31,10 @@ function compareNumericStrings(a: string, b: string): number {
   const absA = aNeg ? a.slice(1) : a;
   const absB = bNeg ? b.slice(1) : b;
 
-  const [aInt = "0", aFrac = ""] = absA.split(".");
-  const [bInt = "0", bFrac = ""] = absB.split(".");
+  let [aInt, aFrac = ""] = absA.split(".");
+  let [bInt, bFrac = ""] = absB.split(".");
+  aInt ||= "0"; // ".5" has an empty integer part
+  bInt ||= "0";
 
   if (aInt.length !== bInt.length) {
     const cmp = aInt.length < bInt.length ? -1 : 1;

@@ -14,10 +14,14 @@ import type { TransformNumberOptions } from "../utils/transformNumber";
 interface PersianNumberInputProps
   extends Omit<
       React.InputHTMLAttributes<HTMLInputElement>,
-      "value" | "min" | "max"
+      "value" | "defaultValue" | "min" | "max"
     >,
     Omit<TransformNumberOptions, "maxDecimals"> {
   initialValue?: number | string;
+  /** Controlled value. When it changes (e.g. a form reset) the input shows it. */
+  value?: number | string | null;
+  /** Alias of initialValue, so it is not passed to the controlled <input>. */
+  defaultValue?: number | string;
   onValueChange?: (value: string | undefined) => void;
   min?: number;
   max?: number;
@@ -44,6 +48,8 @@ const PersianNumberInput = forwardRef<
 >((props, ref) => {
   const {
     initialValue,
+    value: controlledValue,
+    defaultValue,
     separatorCount,
     separatorChar,
     decimalChar,
@@ -64,7 +70,8 @@ const PersianNumberInput = forwardRef<
   } = props;
 
   const hookProps: UsePersianNumberInputProps = {
-    initialValue,
+    initialValue: initialValue ?? defaultValue,
+    value: controlledValue,
     separatorCount,
     separatorChar,
     decimalChar,

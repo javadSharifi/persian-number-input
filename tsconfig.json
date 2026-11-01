@@ -26,6 +26,9 @@
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "src/setupTests.ts",
+    "src/test-utils.ts"
   ]
 }

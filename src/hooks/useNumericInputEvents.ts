@@ -8,7 +8,7 @@ interface EventOptions {
   maxDecimals?: number;
   decimalChar?: string;
   separatorChar: string;
-  updateValue: (value: string) => void;
+  updateValue: (value: string, rawCaret?: number) => void;
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   onPaste?: React.ClipboardEventHandler<HTMLInputElement>;
 }
@@ -63,10 +63,19 @@ export const useNumericInputEvents = (options: EventOptions) => {
         if (currentFormatted[i] !== separatorChar) rawEnd++;
       }
 
-      const sanitizedPaste = sanitizeNumericInput(pasted, maxDecimals, decimalChar);
+      const sanitizedPaste = sanitizeNumericInput(
+        pasted.split(separatorChar).join(""),
+        maxDecimals,
+        decimalChar
+      );
       const newRaw = rawValue.slice(0, rawStart) + sanitizedPaste + rawValue.slice(rawEnd);
-      const finalRaw = sanitizeNumericInput(newRaw, maxDecimals, decimalChar);
-      updateValue(finalRaw);
+      // ignore pastes with no number in them, or that would add a second decimal point
+      if (sanitizedPaste && newRaw.split(".").length <= 2) {
+        updateValue(
+          sanitizeNumericInput(newRaw, maxDecimals),
+          rawStart + sanitizedPaste.length
+        );
+      }
 
       externalOnPaste?.(e);
     },
